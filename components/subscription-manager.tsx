@@ -295,7 +295,7 @@ export function SubscriptionManager() {
                           <h3 className="text-sm font-medium">Payment Instructions</h3>
                           <div className="mt-2 text-sm">
                             <p>Please send {calculateAmount(months).toLocaleString()} TZS to the following number:</p>
-                            <p className="mt-1 font-medium">+255 712 345 678</p>
+                            <p className="mt-1 font-medium">+255 712 815 726 (Ibrahim Msambwe)</p>
                             <p className="mt-2 text-xs">
                               After making the payment, enter the transaction ID and paste the confirmation message
                               below.

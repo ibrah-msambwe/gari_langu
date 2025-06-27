@@ -88,7 +88,7 @@ export function MobileAppDownload() {
                 <Label htmlFor="phone">Phone Number</Label>
                 <Input
                   id="phone"
-                  placeholder="+255 712 345 678"
+                  placeholder="+255 712 815 726"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                 />

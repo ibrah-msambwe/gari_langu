@@ -11,14 +11,16 @@ import { useLanguage } from "@/components/language-provider"
 import { useAuthStore } from "@/lib/auth-store"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
+import { useGlobalLoading } from "@/components/ui/toaster"
 
 export function MobileNav() {
   const pathname = usePathname()
   const router = useRouter()
   const { t } = useLanguage()
-  const { isAuthenticated, currentUser, logoutUser } = useAuthStore()
+  const { isAuthenticated, currentUser, logout } = useAuthStore()
   const [open, setOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const setLoading = useGlobalLoading((s) => s.setLoading)
 
   // Fix hydration issues
   useEffect(() => {
@@ -73,7 +75,7 @@ export function MobileNav() {
 
   const handleLogout = () => {
     setOpen(false)
-    logoutUser()
+    logout()
     router.push("/")
   }
 
@@ -95,7 +97,6 @@ export function MobileNav() {
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-[280px] sm:w-[300px] p-0">
-        <div className="flex h-full flex-col">
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between border-b p-4">
             <h2 className="text-lg font-semibold">Gari Langu</h2>
@@ -119,13 +120,13 @@ export function MobileNav() {
                 </div>
               </div>
               <div className="mt-4 flex gap-2">
-                <Link href="/dashboard/profile" onClick={() => setOpen(false)} className="flex-1">
+                <Link href="/dashboard/profile" onClick={() => { setOpen(false); setLoading(true); }} className="flex-1">
                   <Button variant="outline" size="sm" className="w-full">
                     <User className="mr-2 h-4 w-4" />
                     Profile
                   </Button>
                 </Link>
-                <Link href="/dashboard/subscription" onClick={() => setOpen(false)} className="flex-1">
+                <Link href="/dashboard/subscription" onClick={() => { setOpen(false); setLoading(true); }} className="flex-1">
                   <Button variant="outline" size="sm" className="w-full">
                     <CreditCard className="mr-2 h-4 w-4" />
                     Subscription
@@ -141,7 +142,7 @@ export function MobileNav() {
                 <Link
                   key={index}
                   href={item.href}
-                  onClick={() => setOpen(false)}
+                  onClick={() => { setOpen(false); setLoading(true); }}
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary",
                     pathname === item.href || pathname.startsWith(item.href + "/")

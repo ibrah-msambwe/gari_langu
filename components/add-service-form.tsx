@@ -89,8 +89,8 @@ export function AddServiceForm({ carId, onSuccess, onCancel }: AddServiceFormPro
 
       // Show success toast
       toast({
-        title: "Service record added",
-        description: "The service record has been added successfully.",
+        title: "Service added",
+        description: "Your service record has been added successfully.",
       })
 
       // Call onSuccess callback

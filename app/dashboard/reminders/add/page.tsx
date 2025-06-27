@@ -83,7 +83,7 @@ export default function AddReminderPage() {
     // Show success toast
     toast({
       title: "Reminder added",
-      description: "The service reminder has been added successfully.",
+      description: "Your reminder has been added successfully.",
     })
 
     // Redirect to reminders page

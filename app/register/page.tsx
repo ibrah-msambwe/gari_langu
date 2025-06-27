@@ -56,13 +56,13 @@ export default function Register() {
 
       toast({
         title: "Registration successful",
-        description: "Your account has been created. You have a 7-day free trial.",
+        description: "Your account has been created. Please log in to continue.",
       })
 
-      // Redirect to dashboard
+      // Redirect to login page
       setTimeout(() => {
         setIsLoading(false)
-        router.push("/dashboard")
+        router.push("/login")
       }, 1500)
     } catch (error) {
       setIsLoading(false)
@@ -118,7 +118,7 @@ export default function Register() {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="phone">Phone Number</Label>
-                  <Input id="phone" name="phone" type="tel" placeholder="+255 712 345 678" required />
+                  <Input id="phone" name="phone" type="tel" placeholder="+255 712 815 726" required />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="password">Password</Label>

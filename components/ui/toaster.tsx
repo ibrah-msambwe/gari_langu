@@ -9,6 +9,22 @@ import {
   ToastTitle,
   ToastViewport,
 } from "@/components/ui/toast"
+import { useEffect } from "react"
+import { create } from "zustand"
+
+export const useGlobalLoading = create<{ loading: boolean; setLoading: (v: boolean) => void }>((set) => ({
+  loading: false,
+  setLoading: (v) => set({ loading: v }),
+}))
+
+export function GlobalLoadingBar() {
+  const loading = useGlobalLoading((s) => s.loading)
+  return loading ? (
+    <div className="fixed top-0 left-0 w-full h-1 z-[9999]">
+      <div className="h-full w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-pink-500 animate-pulse" />
+    </div>
+  ) : null
+}
 
 export function Toaster() {
   const { toasts } = useToast()

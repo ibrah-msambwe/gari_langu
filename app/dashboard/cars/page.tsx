@@ -17,6 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import Image from "next/image"
 
 export default function CarsPage() {
   const { cars, deleteCar } = useCarStore()
@@ -81,11 +82,7 @@ export default function CarsPage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {cars.map((car) => (
             <Card key={car.id} className="overflow-hidden">
-              <img
-                src={car.image || "/placeholder.svg?height=200&width=300"}
-                alt={`${car.make} ${car.model}`}
-                className="h-48 w-full object-cover"
-              />
+              <Image src={car.image || "/placeholder.svg?height=200&width=300"} alt={car.make + " " + car.model} width={300} height={200} className="rounded-md object-cover" />
               <CardContent className="p-4">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">

@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { type Car, useCarStore } from "@/lib/car-store"
 import { useToast } from "@/components/ui/use-toast"
+import Image from "next/image"
 
 export default function EditCarPage() {
   const params = useParams()
@@ -146,11 +147,7 @@ export default function EditCarPage() {
                 <Input id="image" name="image" type="file" accept="image/*" onChange={handleImageChange} />
                 {(previewImage || car.image) && (
                   <div className="mt-2">
-                    <img
-                      src={previewImage || car.image || "/placeholder.svg"}
-                      alt="Vehicle preview"
-                      className="h-48 w-full rounded-md object-cover"
-                    />
+                    <Image src={previewImage || car.image || "/placeholder.svg"} alt="Car preview" width={300} height={200} className="rounded-md object-cover" />
                   </div>
                 )}
               </div>

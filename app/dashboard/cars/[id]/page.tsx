@@ -23,6 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AddServiceForm } from "@/components/add-service-form"
 import { ServiceHistory } from "@/components/service-history"
 import { useLanguage } from "@/components/language-provider"
+import Image from "next/image"
 
 export default function CarDetailPage() {
   const params = useParams()
@@ -122,11 +123,7 @@ export default function CarDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="aspect-video overflow-hidden rounded-md">
-                <img
-                  src={car.image || "/placeholder.svg"}
-                  alt={`${car.make} ${car.model}`}
-                  className="h-full w-full object-cover"
-                />
+                <Image src={car.image || "/placeholder.svg"} alt={car.make + " " + car.model} width={300} height={200} className="h-full w-full object-cover" />
               </div>
               <div className="mt-4 grid grid-cols-2 gap-4">
                 <div>

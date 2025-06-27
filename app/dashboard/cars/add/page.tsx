@@ -13,6 +13,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { useCarStore } from "@/lib/car-store"
 import { useToast } from "@/components/ui/use-toast"
 import { Loader2 } from "lucide-react"
+import Image from "next/image"
 
 export default function AddCarPage() {
   const router = useRouter()
@@ -79,8 +80,8 @@ export default function AddCarPage() {
 
       // Show success toast
       toast({
-        title: "Car added successfully",
-        description: `Your ${car.make} ${car.model} has been added to your account.`,
+        title: "Car added",
+        description: "Your car has been added successfully.",
       })
 
       // Redirect to cars page
@@ -148,11 +149,7 @@ export default function AddCarPage() {
                 <Input id="image" name="image" type="file" accept="image/*" onChange={handleImageChange} />
                 {previewImage && (
                   <div className="mt-2">
-                    <img
-                      src={previewImage || "/placeholder.svg"}
-                      alt="Vehicle preview"
-                      className="h-48 w-full rounded-md object-cover"
-                    />
+                    <Image src={previewImage || "/placeholder.svg"} alt="Car preview" width={300} height={200} className="rounded-md object-cover" />
                   </div>
                 )}
               </div>

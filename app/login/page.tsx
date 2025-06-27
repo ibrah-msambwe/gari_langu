@@ -15,7 +15,7 @@ import { Loader2 } from "lucide-react"
 
 export default function Login() {
   const router = useRouter()
-  const { loginUser } = useAuthStore()
+  const { login } = useAuthStore()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [formError, setFormError] = useState("")
@@ -30,7 +30,7 @@ export default function Login() {
     const password = formData.get("password") as string
 
     // Attempt to login
-    const success = loginUser(email, password)
+    const success = login(email, password)
 
     if (success) {
       toast({

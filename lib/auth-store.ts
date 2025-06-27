@@ -91,7 +91,7 @@ export const useAuthStore = create<{
           name: "Ibrahim Msambwe",
           email: "msambwe2@gmail.com",
           password: "Msambwe@4687",
-          phone: "+255 712 345 678",
+          phone: "+255 712 815 726",
           registrationDate: new Date().toISOString(),
           trialEndDate: createTrialEndDate(),
           isSubscribed: true,

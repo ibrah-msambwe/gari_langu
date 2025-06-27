@@ -16,14 +16,15 @@ import { useAuthStore } from "@/lib/auth-store"
 import { useRouter } from "next/navigation"
 import { useLanguage } from "./language-provider"
 import { Settings, LogOut, User, CreditCard, ShieldCheck } from "lucide-react"
+import { differenceInDays } from "date-fns"
 
 export function UserNav() {
-  const { currentUser, logoutUser, isAdmin } = useAuthStore()
+  const { currentUser, logout, isAdmin } = useAuthStore()
   const router = useRouter()
   const { t } = useLanguage()
 
   const handleLogout = () => {
-    logoutUser()
+    logout()
     router.push("/login")
   }
 
@@ -33,6 +34,20 @@ export function UserNav() {
       .map((n) => n[0])
       .join("")
       .toUpperCase()
+  }
+
+  function DaysLeftBadge({ user }) {
+    if (!user) return null
+    const now = new Date()
+    if (user.isSubscribed && user.subscriptionEndDate) {
+      const days = differenceInDays(new Date(user.subscriptionEndDate), now)
+      if (days < 0) return <span className="text-red-500 text-xs ml-2">Subscription expired</span>
+      return <span className="text-green-600 text-xs ml-2">{days} days left</span>
+    } else {
+      const days = differenceInDays(new Date(user.trialEndDate), now)
+      if (days < 0) return <span className="text-red-500 text-xs ml-2">Trial expired</span>
+      return <span className="text-yellow-600 text-xs ml-2">{days} days left (trial)</span>
+    }
   }
 
   if (!currentUser) return null
@@ -51,7 +66,7 @@ export function UserNav() {
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{currentUser.name}</p>
-            <p className="text-xs leading-none text-muted-foreground">{currentUser.email}</p>
+            <p className="text-xs text-muted-foreground">{currentUser.email} <DaysLeftBadge user={currentUser} /></p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
