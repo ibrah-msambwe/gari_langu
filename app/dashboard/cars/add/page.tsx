@@ -14,11 +14,13 @@ import { useCarStore } from "@/lib/car-store"
 import { useToast } from "@/components/ui/use-toast"
 import { Loader2 } from "lucide-react"
 import Image from "next/image"
+import { useAuthStore } from "@/lib/auth-store"
 
 export default function AddCarPage() {
   const router = useRouter()
   const { addCar } = useCarStore()
   const { toast } = useToast()
+  const { user } = useAuthStore()
   const [isLoading, setIsLoading] = useState(false)
   const [previewImage, setPreviewImage] = useState<string | null>(null)
   const [formError, setFormError] = useState("")
@@ -34,7 +36,7 @@ export default function AddCarPage() {
     }
   }
 
-  function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setIsLoading(true)
     setFormError("")
@@ -45,50 +47,51 @@ export default function AddCarPage() {
       // Validate required fields
       const make = formData.get("make") as string
       const model = formData.get("model") as string
-      const yearValue = formData.get("year") as string
-      const licensePlate = formData.get("licensePlate") as string
-
-      if (!make || !model || !yearValue || !licensePlate) {
+      const year = formData.get("year") as string
+      const license_plate = formData.get("licensePlate") as string
+      if (!make || !model || !year || !license_plate) {
         setFormError("Please fill in all required fields")
         setIsLoading(false)
         return
       }
 
-      const year = Number.parseInt(yearValue, 10)
-      if (isNaN(year)) {
-        setFormError("Year must be a valid number")
+      // Use actual user_id from auth/session
+      const user_id = user?.id
+      if (!user_id) {
+        setFormError("User not authenticated. Please log in again.")
         setIsLoading(false)
         return
       }
 
-      // Create car object from form data
+      // Create car object from form data (old object removed)
       const car = {
         make,
         model,
         year,
-        licensePlate,
-        color: (formData.get("color") as string) || undefined,
-        vin: (formData.get("vin") as string) || undefined,
-        description: (formData.get("description") as string) || undefined,
+        license_plate,
+        color: (formData.get("color") as string) || "",
+        vin: (formData.get("vin") as string) || "",
+        description: (formData.get("description") as string) || "",
         image: previewImage || "/placeholder.svg?height=200&width=300",
-        lastService: new Date().toISOString().split("T")[0],
-        nextService: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0], // 90 days from now
+        user_id: String(user_id),
       }
 
-      // Add car to store and get the new ID
-      const newCarId = addCar(car)
+      // Await the async addCar
+      const newCarId = await addCar(car)
 
-      // Show success toast
+      if (newCarId) {
       toast({
         title: "Car added",
         description: "Your car has been added successfully.",
       })
-
-      // Redirect to cars page
       setTimeout(() => {
         setIsLoading(false)
         router.push(`/dashboard/cars/${newCarId}`)
       }, 1000)
+      } else {
+        setFormError("There was a problem adding your car. Please try again.")
+        setIsLoading(false)
+      }
     } catch (error) {
       console.error("Error adding car:", error)
       setFormError("There was a problem adding your car. Please try again.")

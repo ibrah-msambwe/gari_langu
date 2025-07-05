@@ -6,6 +6,8 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { LanguageProvider } from "@/components/language-provider"
 import { Toaster, GlobalLoadingBar } from "@/components/ui/toaster"
 import { AuthGuard } from "@/components/auth-guard"
+import { AuthSessionProvider } from "@/components/AuthSessionProvider"
+import { SessionRestorer } from "@/components/SessionRestorer";
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -24,19 +26,19 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
+        <SessionRestorer />
         <GlobalLoadingBar />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <LanguageProvider>
-            <AuthGuard>
-              {children}
-              <Toaster />
-            </AuthGuard>
+            <AuthSessionProvider>
+              <AuthGuard>
+                {children}
+                <Toaster />
+              </AuthGuard>
+            </AuthSessionProvider>
           </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>
   )
 }
-
-
-import './globals.css'

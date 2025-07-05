@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -15,10 +15,17 @@ import { Loader2, ShieldCheck } from "lucide-react"
 
 export default function AdminLogin() {
   const router = useRouter()
-  const { loginAdmin } = useAuthStore()
+  const { login, isAdmin, isAuthenticated } = useAuthStore()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [formError, setFormError] = useState("")
+
+  useEffect(() => {
+    // If already authenticated and isAdmin, redirect to /admin
+    if (isAuthenticated && isAdmin) {
+      router.push("/admin")
+    }
+  }, [isAuthenticated, isAdmin, router])
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -29,26 +36,35 @@ export default function AdminLogin() {
     const email = formData.get("email") as string
     const password = formData.get("password") as string
 
-    // Attempt to login as admin
-    const success = loginAdmin(email, password)
+    const result = await login(email, password)
+    console.log("[AdminLogin] Login result:", result)
 
-    if (success) {
-      toast({
-        title: "Admin login successful",
-        description: "Welcome to the Gari Langu admin panel!",
-      })
-
+    if ('user' in result) {
+      // Wait for isAdmin to update in the store
       setTimeout(() => {
-        setIsLoading(false)
-        router.push("/admin")
-      }, 1000)
+        if (useAuthStore.getState().isAdmin) {
+          toast({
+            title: "Admin login successful",
+            description: "Welcome to the Gari Langu admin panel!",
+          })
+          setIsLoading(false)
+          router.push("/admin")
+        } else {
+          setIsLoading(false)
+          setFormError("You are not an admin. Access denied.")
+          toast({
+            title: "Access denied",
+            description: "You are not an admin.",
+            variant: "destructive",
+          })
+        }
+      }, 500)
     } else {
       setIsLoading(false)
-      setFormError("Invalid admin credentials. Please try again.")
-
+      setFormError("Invalid admin credentials. Please try again. " + (('error' in result && result.error) ? result.error.message : ""))
       toast({
         title: "Admin login failed",
-        description: "Invalid email or password. Please try again.",
+        description: "Invalid email or password. " + (('error' in result && result.error) ? result.error.message : ""),
         variant: "destructive",
       })
     }

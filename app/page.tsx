@@ -20,7 +20,7 @@ export default function Home() {
               <Link href="/register">
                 <Button>Register</Button>
               </Link>
-              <Link href="/admin-login">
+              <Link href="/login-admin">
                 <Button variant="ghost" size="icon">
                   <ShieldCheck className="h-5 w-5" />
                   <span className="sr-only">Admin Login</span>

@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useAuthStore } from "@/lib/auth-store"
+import { useEffect, useState } from "react"
+import { supabase } from "@/lib/supabaseClient"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -15,13 +15,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 
 export default function AdminNotificationsPage() {
-  const { users } = useAuthStore()
+  const [users, setUsers] = useState<any[]>([])
   const { toast } = useToast()
   const [notificationType, setNotificationType] = useState<"all" | "active" | "expired" | "pending">("all")
   const [notificationSubject, setNotificationSubject] = useState("")
   const [notificationMessage, setNotificationMessage] = useState("")
   const [selectedUsers, setSelectedUsers] = useState<number[]>([])
   const [isSending, setIsSending] = useState(false)
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const { data, error } = await supabase.from("users").select("*")
+      if (!error && data) setUsers(data)
+    }
+    fetchUsers()
+  }, [])
 
   // Filter users based on notification type
   const filteredUsers = users.filter((user) => {

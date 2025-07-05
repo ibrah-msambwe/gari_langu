@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useAuthStore } from "@/lib/auth-store"
+import { useEffect, useState } from "react"
+import { supabase } from "@/lib/supabaseClient"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
@@ -31,7 +31,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function AdminUsersPage() {
-  const { users, updateUser, deleteUser, setUserActive } = useAuthStore()
+  const [users, setUsers] = useState<any[]>([])
   const { toast } = useToast()
   const [selectedUser, setSelectedUser] = useState<number | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
@@ -46,6 +46,25 @@ export default function AdminUsersPage() {
     phone: "",
     language: "en" as "en" | "sw",
   })
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const { data, error } = await supabase.from("users").select("*, subscription_end_date, is_active, is_subscribed, is_admin, trial_end, created_at")
+      if (!error && data) {
+        // Normalize user fields for UI
+        setUsers(data.map((user: any) => ({
+          ...user,
+          registrationDate: user.created_at || user.registrationDate || user.trial_end || null,
+          isActive: user.is_active !== undefined ? user.is_active : user.isActive,
+          isSubscribed: user.is_subscribed !== undefined ? user.is_subscribed : user.isSubscribed,
+          isAdmin: user.is_admin !== undefined ? user.is_admin : user.isAdmin,
+          subscriptionEndDate: user.subscription_end_date || user.subscriptionEndDate,
+          trialEnd: user.trial_end || null,
+        })))
+      }
+    }
+    fetchUsers()
+  }, [])
 
   // Filter and search users
   const filteredUsers = users.filter((user) => {
@@ -62,11 +81,11 @@ export default function AdminUsersPage() {
       matchesStatus =
         user.isSubscribed &&
         user.subscriptionEndDate &&
-        new Date(user.subscriptionEndDate) > new Date() &&
+        new Date(user.subscriptionEndDate as string) > new Date() &&
         user.isActive === true
     } else if (filterStatus === "inactive") {
       matchesStatus =
-        (!user.isSubscribed || !user.subscriptionEndDate || new Date(user.subscriptionEndDate) <= new Date()) &&
+        (!user.isSubscribed || !user.subscriptionEndDate || new Date(user.subscriptionEndDate as string) <= new Date()) &&
         user.isActive === true
     } else if (filterStatus === "pending") {
       matchesStatus = !!user.pendingPayment && user.isActive === true
@@ -93,45 +112,45 @@ export default function AdminUsersPage() {
     }
   }
 
-  const handleDeleteUser = (userId: number) => {
+  const handleDeleteUser = async (userId: number) => {
     setSelectedUser(userId)
     setIsDeleteDialogOpen(true)
   }
 
-  const confirmDeleteUser = () => {
+  const confirmDeleteUser = async () => {
     if (selectedUser === null) return
-
-    deleteUser(selectedUser)
-
+    // Delete user from Supabase
+    await supabase.from("users").delete().eq("id", selectedUser)
+    setUsers(users.filter((u) => u.id !== selectedUser))
     toast({
       title: "User deleted",
       description: "The user has been permanently deleted.",
     })
-
     setIsDeleteDialogOpen(false)
   }
 
-  const handleUpdateUser = () => {
+  const handleUpdateUser = async () => {
     if (selectedUser === null) return
-
-    updateUser(selectedUser, {
+    // Update user in Supabase
+    await supabase.from("users").update({
       name: editUser.name,
       email: editUser.email,
       phone: editUser.phone,
       language: editUser.language,
-    })
-
+      // If you want to allow admin toggle, add is_admin here
+    }).eq("id", selectedUser)
+    setUsers(users.map((u) => u.id === selectedUser ? { ...u, ...editUser } : u))
     toast({
       title: "User updated",
       description: "User information has been updated successfully.",
     })
-
     setIsEditDialogOpen(false)
   }
 
-  const handleToggleUserActive = (userId: number, currentStatus: boolean) => {
-    setUserActive(userId, !currentStatus)
-
+  const handleToggleUserActive = async (userId: number, currentStatus: boolean) => {
+    // Toggle user active status in Supabase
+    await supabase.from("users").update({ is_active: !currentStatus }).eq("id", userId)
+    setUsers(users.map((u) => u.id === userId ? { ...u, isActive: !currentStatus } : u))
     toast({
       title: currentStatus ? "User deactivated" : "User activated",
       description: currentStatus
@@ -219,7 +238,7 @@ export default function AdminUsersPage() {
                     <TableCell>{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>{user.phone || "—"}</TableCell>
-                    <TableCell>{new Date(user.registrationDate).toLocaleDateString()}</TableCell>
+                    <TableCell>{user.registrationDate && !isNaN(new Date(user.registrationDate as string).getTime()) ? new Date(user.registrationDate as string).toLocaleDateString() : "—"}</TableCell>
                     <TableCell>
                       {!user.isActive ? (
                         <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200">
@@ -229,8 +248,10 @@ export default function AdminUsersPage() {
                         <Badge className="bg-purple-500">Admin</Badge>
                       ) : user.isSubscribed &&
                         user.subscriptionEndDate &&
-                        new Date(user.subscriptionEndDate) > new Date() ? (
+                        new Date(user.subscriptionEndDate as string) > new Date() ? (
                         <Badge className="bg-green-500">Active</Badge>
+                      ) : user.trialEnd && new Date(user.trialEnd as string) > new Date() ? (
+                        <Badge className="bg-blue-500">Trial</Badge>
                       ) : user.pendingPayment ? (
                         <Badge className="bg-yellow-500">Pending</Badge>
                       ) : (

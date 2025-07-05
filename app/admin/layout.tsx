@@ -11,7 +11,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { isAuthenticated, isAdmin } = useAuthStore()
 
   useEffect(() => {
-    if (!isAuthenticated || !isAdmin()) {
+    if (!isAuthenticated || !isAdmin) {
       router.push("/admin-login")
     }
   }, [isAuthenticated, isAdmin, router])

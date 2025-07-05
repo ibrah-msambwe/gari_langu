@@ -3,14 +3,20 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { BarChart3, Bell, Car, CreditCard, History, Settings, Plus, Calendar } from "lucide-react"
+import { BarChart3, Bell, Car, CreditCard, History, Settings, Plus, Calendar, LogOut } from "lucide-react"
 import { useLanguage } from "@/components/language-provider"
 import { useGlobalLoading } from "@/components/ui/toaster"
+import { useAuthStore } from "@/lib/auth-store"
 
 export function DashboardNav() {
   const pathname = usePathname()
   const { t } = useLanguage()
   const setLoading = useGlobalLoading((s) => s.setLoading)
+  const { logout } = useAuthStore()
+  const handleLogout = async () => {
+    await logout()
+    window.location.href = "/login"
+  }
 
   const navItems = [
     {
@@ -105,6 +111,17 @@ export function DashboardNav() {
           </div>
         </Link>
       ))}
+
+      {/* Logout Button */}
+      <button
+        onClick={handleLogout}
+        className="group flex items-center gap-3 rounded-xl px-4 py-3 mt-2 text-slate-700 dark:text-slate-300 hover:bg-red-100 dark:hover:bg-red-900 hover:text-red-700 dark:hover:text-red-400 transition-all duration-200 w-full"
+      >
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400">
+          <LogOut className="h-5 w-5" />
+        </div>
+        <span className="font-medium">Logout</span>
+      </button>
 
       {/* Quick Actions */}
       <div className="mt-8">

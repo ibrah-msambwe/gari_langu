@@ -9,24 +9,55 @@ import { Button } from "@/components/ui/button"
 import { Car, Plus, Wrench, Bell, ArrowRight, CreditCard } from "lucide-react"
 import Link from "next/link"
 import { differenceInDays } from "date-fns"
+import { supabase } from "@/lib/supabaseClient";
+import { useEffect } from "react";
 
 export default function Dashboard() {
+  useEffect(() => {
+    async function testConnection() {
+      const { data, error } = await supabase.from("users").select("*").limit(1);
+      if (error) {
+        console.error("Supabase connection error:", error);
+      } else {
+        console.log("Supabase connection success! Sample data:", data);
+      }
+    }
+    testConnection();
+  }, []);
   const { cars } = useCarStore()
   const { services } = useServiceStore()
   const { reminders } = useReminderStore()
-  const { currentUser } = useAuthStore()
+  const { user, isTrialActive, trialEnd, isRestricted } = useAuthStore()
   const { t } = useLanguage()
+
+  // Simulate subscription info (replace with real values if available)
+  // You may want to fetch these from the user profile or store
+  const isSubscribed = false // TODO: Replace with real subscription status if available
+  const subscriptionEndDate = null // TODO: Replace with real subscription end date if available
+
+  if (isRestricted) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh] text-center">
+        <h2 className="text-2xl font-bold mb-4 text-red-600">Access Restricted</h2>
+        <p className="mb-4 text-lg">Your free trial has ended and you do not have an active subscription.</p>
+        <p className="mb-6 text-md">Please subscribe to continue using Gari Langu features.</p>
+        <Link href="/dashboard/subscription">
+          <Button className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md">Go to Subscription Page</Button>
+        </Link>
+      </div>
+    )
+  }
 
   // Get upcoming reminders (due in the next 30 days)
   const upcomingReminders = reminders
     .filter((reminder) => {
-      const dueDate = new Date(reminder.dueDate)
+      const dueDate = new Date(reminder.due_date)
       const today = new Date()
       const thirtyDaysFromNow = new Date()
       thirtyDaysFromNow.setDate(today.getDate() + 30)
       return dueDate <= thirtyDaysFromNow && reminder.status !== "completed"
     })
-    .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+    .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
 
   // Get recent services (last 5)
   const recentServices = [...services]
@@ -34,9 +65,9 @@ export default function Dashboard() {
     .slice(0, 5)
 
   // Get car details for a reminder
-  const getCarDetails = (carId: number) => {
-    const car = cars.find((c) => c.id === carId)
-    return car ? `${car.make} ${car.model} (${car.licensePlate})` : "Unknown Vehicle"
+  const getCarDetails = (car_id: number) => {
+    const car = cars.find((c) => c.id === car_id)
+    return car ? `${car.make} ${car.model} (${car.license_plate})` : "Unknown Vehicle"
   }
 
   // Calculate days until a date
@@ -67,8 +98,8 @@ export default function Dashboard() {
         <div>
           <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-1">Dashboard</h1>
           <p className="text-lg text-slate-600 dark:text-slate-300">
-            {currentUser
-              ? `Welcome to your Gari Langu dashboard, ${currentUser.name}.`
+            {user
+              ? `Welcome to your Gari Langu dashboard, ${user.email}.`
               : "Welcome to your Gari Langu dashboard."}
           </p>
         </div>
@@ -114,25 +145,25 @@ export default function Dashboard() {
         </Card>
 
         <Card className={
-          currentUser?.isSubscribed && currentUser?.subscriptionEndDate && differenceInDays(new Date(currentUser.subscriptionEndDate), new Date()) >= 0
+          isSubscribed && subscriptionEndDate && differenceInDays(new Date(subscriptionEndDate), new Date()) >= 0
             ? "shadow-lg border-0 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800"
-            : !currentUser?.isSubscribed && currentUser?.trialEndDate && differenceInDays(new Date(currentUser.trialEndDate), new Date()) >= 0
+            : !isSubscribed && trialEnd && differenceInDays(new Date(trialEnd), new Date()) >= 0
             ? "shadow-lg border-0 bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900 dark:to-yellow-800"
             : "shadow-lg border-0 bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900 dark:to-red-800"
         }>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{currentUser?.isSubscribed ? "Subscription Status" : "Trial Status"}</CardTitle>
+            <CardTitle className="text-sm font-medium">{isSubscribed ? "Subscription Status" : "Trial Status"}</CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-extrabold ">
               {(() => {
-                if (currentUser?.isSubscribed && currentUser?.subscriptionEndDate) {
-                  const days = differenceInDays(new Date(currentUser.subscriptionEndDate), new Date())
+                if (isSubscribed && subscriptionEndDate) {
+                  const days = differenceInDays(new Date(subscriptionEndDate), new Date())
                   if (days < 0) return <span className="text-red-700">Expired</span>
                   return <span className="text-green-700">{days} days</span>
-                } else if (currentUser?.trialEndDate) {
-                  const days = differenceInDays(new Date(currentUser.trialEndDate), new Date())
+                } else if (trialEnd) {
+                  const days = differenceInDays(new Date(trialEnd), new Date())
                   if (days < 0) return <span className="text-red-700">Expired</span>
                   return <span className="text-yellow-700">{days} days</span>
                 } else {
@@ -142,12 +173,12 @@ export default function Dashboard() {
             </div>
             <p className="text-xs mt-2">
               {(() => {
-                if (currentUser?.isSubscribed && currentUser?.subscriptionEndDate) {
-                  const days = differenceInDays(new Date(currentUser.subscriptionEndDate), new Date())
+                if (isSubscribed && subscriptionEndDate) {
+                  const days = differenceInDays(new Date(subscriptionEndDate), new Date())
                   if (days < 0) return "Your subscription has expired."
                   return "Paid subscription"
-                } else if (currentUser?.trialEndDate) {
-                  const days = differenceInDays(new Date(currentUser.trialEndDate), new Date())
+                } else if (trialEnd) {
+                  const days = differenceInDays(new Date(trialEnd), new Date())
                   if (days < 0) return "Your trial has expired."
                   return "Trial period"
                 } else {
@@ -176,7 +207,7 @@ export default function Dashboard() {
             ) : (
               <p className="text-xs text-muted-foreground">
                 {(() => {
-                  const days = getDaysUntil(upcomingReminders[0].dueDate)
+                  const days = getDaysUntil(upcomingReminders[0].due_date)
                   if (days < 0) return `Overdue by ${Math.abs(days)} days`
                   return `Next service in ${days} days`
                 })()}
@@ -264,7 +295,7 @@ export default function Dashboard() {
                     <div className="space-y-1">
                       <p className="text-sm font-medium leading-none">Added new car</p>
                       <p className="text-sm text-muted-foreground">
-                        {car.make} {car.model} ({car.licensePlate})
+                        {car.make} {car.model} ({car.license_plate})
                       </p>
                       <p className="text-xs text-muted-foreground">Recently added</p>
                     </div>
@@ -280,7 +311,7 @@ export default function Dashboard() {
                     <div className="space-y-1">
                       <p className="text-sm font-medium leading-none">Service completed</p>
                       <p className="text-sm text-muted-foreground">
-                        {getCarDetails(service.carId)}
+                        {getCarDetails(service.car_id)}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(service.date).toLocaleDateString()}
@@ -324,12 +355,12 @@ export default function Dashboard() {
                       <Bell className="h-4 w-4 text-orange-500" />
                     </div>
                     <div className="space-y-1">
-                      <p className="text-sm font-medium leading-none">{reminder.serviceType}</p>
+                      <p className="text-sm font-medium leading-none">{reminder.service_type}</p>
                       <p className="text-sm text-muted-foreground">
-                        {getCarDetails(reminder.carId)}
+                        {getCarDetails(reminder.car_id)}
                       </p>
                       <p className="text-xs text-orange-600">
-                        Due in {getDaysUntil(reminder.dueDate)} days
+                        Due in {getDaysUntil(reminder.due_date)} days
                       </p>
                     </div>
                   </div>

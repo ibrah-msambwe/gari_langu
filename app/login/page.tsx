@@ -29,26 +29,28 @@ export default function Login() {
     const email = formData.get("email") as string
     const password = formData.get("password") as string
 
-    // Attempt to login
-    const success = login(email, password)
+    console.log("Attempting login for:", email);
 
-    if (success) {
+    // Attempt to login using Supabase Auth
+    const result = await login(email, password)
+
+    if (result && 'user' in result && result.user) {
       toast({
         title: "Login successful",
         description: "Welcome back to Gari Langu!",
       })
-
       setTimeout(() => {
         setIsLoading(false)
         router.push("/dashboard")
       }, 1000)
     } else {
       setIsLoading(false)
-      setFormError("Invalid email or password, or your account has been deactivated. Please try again.")
-
+      const errorMsg = 'error' in result && result.error?.message || "Invalid email or password. Please try again."
+      console.log("Login error:", errorMsg);
+      setFormError(errorMsg)
       toast({
         title: "Login failed",
-        description: "Invalid email or password, or your account has been deactivated.",
+        description: errorMsg,
         variant: "destructive",
       })
     }
@@ -118,7 +120,7 @@ export default function Login() {
             </Link>
           </p>
           <p className="text-sm text-muted-foreground">
-            <Link href="/admin-login" className="underline underline-offset-4 hover:text-primary">
+            <Link href="/login-admin" className="underline underline-offset-4 hover:text-primary">
               Admin Login
             </Link>
           </p>

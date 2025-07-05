@@ -1,106 +1,77 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { useServiceStore } from "./service-store"
+import { supabase } from "@/lib/supabaseClient"
 
 export type ReminderPriority = "high" | "medium" | "low"
 export type ReminderStatus = "upcoming" | "future" | "completed"
 export type NotificationType = "email" | "sms"
 
 export type Reminder = {
-  id: number
-  carId: number
-  serviceType: string
-  dueDate: string
-  status: ReminderStatus
-  notificationSent: boolean
-  notificationTypes: NotificationType[]
-  notificationSchedule: string
-  priority: ReminderPriority
-  notes?: string
-  completedDate?: string
-  addedToServiceHistory?: boolean
+  id: number; // bigint
+  created_at: string; // timestamp with time zone
+  due_date: string; // date
+  notification_sent: boolean;
+  completed_date: string; // time without time zone
+  added_to_service_history: boolean;
+  car_id: number; // bigint
+  notification_schedule: string;
+  service_type: string;
+  priority: string;
+  status: string;
+  notes: string;
+  notification_types: string;
 }
 
 type ReminderStore = {
-  reminders: Reminder[]
-  addReminder: (reminder: Omit<Reminder, "id">) => void
-  updateReminder: (id: number, reminder: Partial<Reminder>) => void
-  deleteReminder: (id: number) => void
-  markAsComplete: (id: number) => void
-  markNotificationSent: (id: number) => void
-  getRemindersByCarId: (carId: number) => Reminder[]
-  getRemindersByStatus: (status: ReminderStatus) => Reminder[]
+  reminders: Reminder[];
+  fetchReminders: () => Promise<void>;
+  addReminder: (reminder: Omit<Reminder, "id" | "created_at">) => Promise<number | null>;
+  updateReminder: (id: number, reminder: Partial<Reminder>) => Promise<void>;
+  deleteReminder: (id: number) => Promise<void>;
+  markAsComplete: (id: number) => Promise<void>;
+  markNotificationSent: (id: number) => Promise<void>;
+  getRemindersByCarId: (carId: number) => Reminder[];
+  getRemindersByStatus: (status: string) => Reminder[];
 }
 
-export const useReminderStore = create<ReminderStore>()(
-  persist(
-    (set, get) => ({
-      reminders: [], // No sample data - users will add their own reminders
-      addReminder: (reminder) => {
-        const reminders = get().reminders
-        const newId = reminders.length > 0 ? Math.max(...reminders.map((r) => r.id)) + 1 : 1
-        set({ reminders: [...reminders, { ...reminder, id: newId }] })
-      },
-      updateReminder: (id, updatedReminder) => {
-        const reminders = get().reminders
-        set({
-          reminders: reminders.map((reminder) => (reminder.id === id ? { ...reminder, ...updatedReminder } : reminder)),
-        })
-      },
-      deleteReminder: (id) => {
-        const reminders = get().reminders
-        set({ reminders: reminders.filter((reminder) => reminder.id !== id) })
-      },
-      markAsComplete: (id) => {
-        const reminders = get().reminders
-        const reminder = reminders.find((r) => r.id === id)
-
-        if (!reminder) return
-
-        const completedDate = new Date().toISOString().split("T")[0]
-
-        // Add to service history automatically
-        if (!reminder.addedToServiceHistory) {
-          const serviceStore = useServiceStore.getState()
-          serviceStore.addServiceFromReminder(
-            reminder.carId,
-            reminder.id,
-            reminder.serviceType,
-            completedDate,
-            reminder.notes,
-          )
-        }
-
-        set({
-          reminders: reminders.map((reminder) =>
-            reminder.id === id
-              ? {
-                  ...reminder,
-                  status: "completed",
-                  completedDate,
-                  addedToServiceHistory: true,
-                }
-              : reminder,
-          ),
-        })
-      },
-      markNotificationSent: (id) => {
-        const reminders = get().reminders
-        set({
-          reminders: reminders.map((reminder) =>
-            reminder.id === id ? { ...reminder, notificationSent: true } : reminder,
-          ),
-        })
-      },
-      getRemindersByCarId: (carId) => {
-        return get().reminders.filter((reminder) => reminder.carId === carId)
-      },
-      getRemindersByStatus: (status) => {
-        return get().reminders.filter((reminder) => reminder.status === status)
-      },
-    }),
-    {
-      name: "reminder-storage",
-    },
-  ),
-)
+export const useReminderStore = create<ReminderStore>()((set, get) => ({
+  reminders: [],
+  fetchReminders: async () => {
+    const { data, error } = await supabase.from("reminders").select("*");
+    if (!error && data) {
+      set({ reminders: data });
+    }
+  },
+  addReminder: async (reminder) => {
+    const { data, error } = await supabase.from("reminders").insert([reminder]).select("id").single();
+    if (error) {
+      console.error("Supabase insert error:", error);
+    }
+    if (!error && data) {
+      await get().fetchReminders();
+      return data.id;
+    }
+    return null;
+  },
+  updateReminder: async (id, updatedReminder) => {
+    await supabase.from("reminders").update(updatedReminder).eq("id", id);
+    await get().fetchReminders();
+  },
+  deleteReminder: async (id) => {
+    await supabase.from("reminders").delete().eq("id", id);
+    await get().fetchReminders();
+  },
+  markAsComplete: async (id) => {
+    await get().updateReminder(id, { status: "completed" });
+  },
+  markNotificationSent: async (id) => {
+    await get().updateReminder(id, { notification_sent: true });
+  },
+  getRemindersByCarId: (carId) => {
+    return get().reminders.filter((reminder) => reminder.car_id === carId);
+  },
+  getRemindersByStatus: (status) => {
+    return get().reminders.filter((reminder) => reminder.status === status);
+  },
+}))

@@ -1,167 +1,156 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
+import { supabase } from "@/lib/supabaseClient"
 
 export type NotificationType = "email" | "sms" | "system"
 export type NotificationPriority = "low" | "medium" | "high"
 export type NotificationStatus = "unread" | "read"
 
 export interface Notification {
-  id: number
-  userId: number | null // null for admin notifications
-  recipientType: "user" | "admin"
-  type: NotificationType
-  title: string
-  message: string
-  priority: NotificationPriority
-  status: NotificationStatus
-  createdAt: string
-  readAt?: string
+  id: number; // bigint
+  created_at: string; // timestamp with time zone
+  user_id: number; // bigint
+  read_at: string; // date
+  type: string;
+  title: string;
+  message: string;
+  priority: string;
+  recipient_type: string;
+  status: string;
 }
 
-// Helper function to generate a unique ID
-const generateId = (items: { id: number }[]) => {
-  return items.length > 0 ? Math.max(...items.map((item) => item.id)) + 1 : 1
+type NotificationStore = {
+  notifications: Notification[];
+  fetchNotifications: () => Promise<void>;
+  addNotification: (notification: Omit<Notification, "id" | "created_at">) => Promise<number | null>;
+  updateNotification: (id: number, notification: Partial<Notification>) => Promise<void>;
+  markAsRead: (notificationId: number) => Promise<void>;
+  markAllAsRead: (recipientType: string, userId?: number) => Promise<void>;
+  deleteNotification: (notificationId: number) => Promise<void>;
+  getUnreadCount: (recipientType: string, userId?: number) => number;
+  getUserNotifications: (userId: number) => Notification[];
+  getAdminNotifications: () => Notification[];
+  sendUserRegistrationNotification: (user_id: number, userName: string, userEmail: string) => Promise<void>;
+  sendPaymentVerificationNotification: (user_id: number, amount: string, status: string) => Promise<void>;
+  sendReminderNotification: (user_id: number, reminderTitle: string, dueDate: string) => Promise<void>;
 }
 
-export const useNotificationStore = create<{
-  notifications: Notification[]
-  addNotification: (notification: Omit<Notification, "id" | "createdAt" | "status">) => Notification
-  markAsRead: (notificationId: number) => void
-  markAllAsRead: (recipientType: "user" | "admin", userId?: number) => void
-  deleteNotification: (notificationId: number) => void
-  getUnreadCount: (recipientType: "user" | "admin", userId?: number) => number
-  getUserNotifications: (userId: number) => Notification[]
-  getAdminNotifications: () => Notification[]
-  sendUserRegistrationNotification: (userId: number, userName: string, userEmail: string) => void
-  sendPaymentVerificationNotification: (userId: number, amount: number, status: "verified" | "rejected") => void
-  sendReminderNotification: (userId: number, reminderTitle: string, dueDate: string) => void
-}>()(
-  persist(
-    (set, get) => ({
+export const useNotificationStore = create<NotificationStore>()((set, get) => ({
       notifications: [],
-      addNotification: (notification) => {
-        const newNotification: Notification = {
-          ...notification,
-          id: generateId(get().notifications),
-          createdAt: new Date().toISOString(),
-          status: "unread",
-        }
-
-        set((state) => ({
-          notifications: [...state.notifications, newNotification],
-        }))
-
-        return newNotification
+  fetchNotifications: async () => {
+    const { data, error } = await supabase.from("notifications").select("*");
+    if (!error && data) {
+      set({ notifications: data });
+    }
+  },
+  addNotification: async (notification) => {
+    const { data, error } = await supabase.from("notifications").insert([notification]).select("id").single();
+    if (error) {
+      console.error("Supabase insert error:", error);
+    }
+    if (!error && data) {
+      await get().fetchNotifications();
+      return data.id;
+    }
+    return null;
+  },
+  updateNotification: async (id, notification) => {
+    await supabase.from("notifications").update(notification).eq("id", id);
+    await get().fetchNotifications();
+  },
+  markAsRead: async (notificationId) => {
+    await get().updateNotification(notificationId, { status: "read" });
       },
-      markAsRead: (notificationId) => {
-        set((state) => ({
-          notifications: state.notifications.map((notification) =>
-            notification.id === notificationId
-              ? { ...notification, status: "read", readAt: new Date().toISOString() }
-              : notification,
-          ),
-        }))
+  markAllAsRead: async (recipientType, userId) => {
+    // This should be implemented as a batch update in production
+    const notifications = get().notifications.filter(n => n.recipient_type === recipientType && (recipientType !== "user" || n.user_id === userId));
+    for (const n of notifications) {
+      await get().updateNotification(n.id, { status: "read" });
+    }
+    await get().fetchNotifications();
       },
-      markAllAsRead: (recipientType, userId) => {
-        set((state) => ({
-          notifications: state.notifications.map((notification) => {
-            if (notification.recipientType === recipientType) {
-              if (recipientType === "user" && userId !== undefined && notification.userId === userId) {
-                return { ...notification, status: "read", readAt: new Date().toISOString() }
-              } else if (recipientType === "admin") {
-                return { ...notification, status: "read", readAt: new Date().toISOString() }
-              }
-            }
-            return notification
-          }),
-        }))
-      },
-      deleteNotification: (notificationId) => {
-        set((state) => ({
-          notifications: state.notifications.filter((notification) => notification.id !== notificationId),
-        }))
+  deleteNotification: async (notificationId) => {
+    await supabase.from("notifications").delete().eq("id", notificationId);
+    await get().fetchNotifications();
       },
       getUnreadCount: (recipientType, userId) => {
         return get().notifications.filter((notification) => {
-          if (notification.status !== "unread") return false
-          if (notification.recipientType !== recipientType) return false
+      if (notification.status !== "unread") return false;
+      if (notification.recipient_type !== recipientType) return false;
           if (recipientType === "user" && userId !== undefined) {
-            return notification.userId === userId
+        return notification.user_id === userId;
           }
-          return true
-        }).length
+      return true;
+    }).length;
       },
-      getUserNotifications: (userId) => {
+  getUserNotifications: (user_id) => {
         return get().notifications.filter(
-          (notification) => notification.recipientType === "user" && notification.userId === userId,
-        )
+      (notification) => notification.recipient_type === "user" && notification.user_id === user_id,
+    );
       },
       getAdminNotifications: () => {
-        return get().notifications.filter((notification) => notification.recipientType === "admin")
+    return get().notifications.filter((notification) => notification.recipient_type === "admin");
       },
-      sendUserRegistrationNotification: (userId, userName, userEmail) => {
-        // Add notification for admin
-        get().addNotification({
-          userId: null,
-          recipientType: "admin",
+  sendUserRegistrationNotification: async (user_id, userName, userEmail) => {
+    await get().addNotification({
+      user_id,
+      recipient_type: "admin",
           type: "system",
           title: "New User Registration",
           message: `${userName} (${userEmail}) has registered a new account.`,
           priority: "medium",
-        })
+      read_at: "",
+      status: "unread",
+    });
       },
-      sendPaymentVerificationNotification: (userId, amount, status) => {
-        // Add notification for user
-        get().addNotification({
-          userId,
-          recipientType: "user",
+  sendPaymentVerificationNotification: async (user_id, amount, status) => {
+    await get().addNotification({
+      user_id,
+      recipient_type: "user",
           type: "email",
           title: status === "verified" ? "Payment Verified" : "Payment Rejected",
           message:
             status === "verified"
-              ? `Your payment of ${amount.toLocaleString()} TZS has been verified. Your subscription has been updated.`
-              : `Your payment of ${amount.toLocaleString()} TZS could not be verified. Please check the details and try again.`,
+          ? `Your payment of ${amount} TZS has been verified. Your subscription has been updated.`
+          : `Your payment of ${amount} TZS could not be verified. Please check the details and try again.`,
           priority: status === "verified" ? "medium" : "high",
-        })
-
-        // Also send SMS for important notifications
+      read_at: "",
+      status: "unread",
+    });
         if (status === "verified") {
-          get().addNotification({
-            userId,
-            recipientType: "user",
+      await get().addNotification({
+        user_id,
+        recipient_type: "user",
             type: "sms",
             title: "Payment Verified",
-            message: `Your Gari Langu payment of ${amount.toLocaleString()} TZS has been verified. Thank you!`,
+        message: `Your Gari Langu payment of ${amount} TZS has been verified. Thank you!`,
             priority: "medium",
-          })
+        read_at: "",
+        status: "unread",
+      });
         }
       },
-      sendReminderNotification: (userId, reminderTitle, dueDate) => {
-        const formattedDate = new Date(dueDate).toLocaleDateString()
-
-        // Add email notification
-        get().addNotification({
-          userId,
-          recipientType: "user",
+  sendReminderNotification: async (user_id, reminderTitle, dueDate) => {
+    const formattedDate = new Date(dueDate).toLocaleDateString();
+    await get().addNotification({
+      user_id,
+      recipient_type: "user",
           type: "email",
           title: "Service Reminder",
           message: `Reminder: ${reminderTitle} is due on ${formattedDate}. Please schedule your service soon.`,
           priority: "medium",
-        })
-
-        // Add SMS notification
-        get().addNotification({
-          userId,
-          recipientType: "user",
+      read_at: "",
+      status: "unread",
+    });
+    await get().addNotification({
+      user_id,
+      recipient_type: "user",
           type: "sms",
           title: "Service Reminder",
           message: `Gari Langu Reminder: ${reminderTitle} is due on ${formattedDate}.`,
           priority: "medium",
-        })
-      },
-    }),
-    {
-      name: "gari-langu-notifications",
-    },
-  ),
-)
+      read_at: "",
+      status: "unread",
+    });
+  },
+}))

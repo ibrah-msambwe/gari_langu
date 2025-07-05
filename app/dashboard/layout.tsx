@@ -13,15 +13,15 @@ import { Car } from "lucide-react"
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
-  const { isAuthenticated, canAccessApp } = useAuthStore()
+  const { isAuthenticated, isTrialActive, isSubscribed } = useAuthStore()
 
   useEffect(() => {
     if (!isAuthenticated) {
       router.push("/login")
-    } else if (!canAccessApp() && pathname !== "/dashboard/subscription") {
+    } else if (!(isTrialActive || isSubscribed) && pathname !== "/dashboard/subscription") {
       router.push("/dashboard/subscription")
     }
-  }, [isAuthenticated, canAccessApp, router, pathname])
+  }, [isAuthenticated, isTrialActive, isSubscribed, router, pathname])
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">

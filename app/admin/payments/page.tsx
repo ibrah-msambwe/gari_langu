@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useAuthStore, type PaymentStatus } from "@/lib/auth-store"
+import { useEffect, useState } from "react"
+import { supabase } from "@/lib/supabaseClient"
 import { Input } from "@/components/ui/input"
 import { Search, Filter, CheckCircle, XCircle, Eye, Download } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
@@ -23,7 +23,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 
 export default function AdminPaymentsPage() {
-  const { payments, users, updatePaymentStatus } = useAuthStore()
+  const [payments, setPayments] = useState<any[]>([])
+  const [users, setUsers] = useState<any[]>([])
   const { toast } = useToast()
   const [activeTab, setActiveTab] = useState<PaymentStatus | "all">("all")
   const [selectedPayment, setSelectedPayment] = useState<number | null>(null)
@@ -31,6 +32,16 @@ export default function AdminPaymentsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [filterMethod, setFilterMethod] = useState<string>("all")
+
+  useEffect(() => {
+    const fetchPaymentsAndUsers = async () => {
+      const { data: paymentsData, error: paymentsError } = await supabase.from("payments").select("*")
+      const { data: usersData, error: usersError } = await supabase.from("users").select("*")
+      if (!paymentsError && paymentsData) setPayments(paymentsData)
+      if (!usersError && usersData) setUsers(usersData)
+    }
+    fetchPaymentsAndUsers()
+  }, [])
 
   // Filter payments
   const filteredPayments = payments.filter((payment) => {
@@ -68,29 +79,27 @@ export default function AdminPaymentsPage() {
     setIsDialogOpen(true)
   }
 
-  const handleApprovePayment = () => {
+  const handleApprovePayment = async () => {
     if (selectedPayment === null) return
-
-    updatePaymentStatus(selectedPayment, "verified", adminNotes)
-
+    // Update payment status in Supabase
+    await supabase.from("payments").update({ status: "verified", adminNotes }).eq("id", selectedPayment)
+    setPayments(payments.map((p) => p.id === selectedPayment ? { ...p, status: "verified", adminNotes } : p))
     toast({
       title: "Payment approved",
       description: "The payment has been verified and the user's subscription has been extended.",
     })
-
     setIsDialogOpen(false)
   }
 
-  const handleRejectPayment = () => {
+  const handleRejectPayment = async () => {
     if (selectedPayment === null) return
-
-    updatePaymentStatus(selectedPayment, "rejected", adminNotes)
-
+    // Update payment status in Supabase
+    await supabase.from("payments").update({ status: "rejected", adminNotes }).eq("id", selectedPayment)
+    setPayments(payments.map((p) => p.id === selectedPayment ? { ...p, status: "rejected", adminNotes } : p))
     toast({
       title: "Payment rejected",
       description: "The payment has been rejected.",
     })
-
     setIsDialogOpen(false)
   }
 
