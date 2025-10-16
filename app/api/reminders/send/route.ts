@@ -13,6 +13,14 @@ import { checkAndSendReminders } from "@/lib/notification-service"
  */
 export async function POST(request: Request) {
   try {
+    // Check if Supabase is properly configured
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      return NextResponse.json(
+        { error: "Supabase not configured" },
+        { status: 500 }
+      )
+    }
+
     // Optional: Verify cron secret for security
     const cronSecret = request.headers.get("x-cron-secret")
     const expectedSecret = process.env.CRON_SECRET
