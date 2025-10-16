@@ -14,8 +14,8 @@ export function Sidebar() {
   const authStore = useAuthStore()
   const setLoading = useGlobalLoading((s) => s.setLoading)
 
-  const handleLogout = () => {
-    authStore.logout()
+  const handleLogout = async () => {
+    await authStore.logout()
     router.push("/")
   }
 

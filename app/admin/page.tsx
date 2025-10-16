@@ -24,17 +24,17 @@ function VerifyPaymentModal({ open, onOpenChange }: { open: boolean; onOpenChang
   const pendingPayments = payments.filter((p: Payment) => p.status === "pending");
   const selectedPayment = selected !== null ? payments.find((p: Payment) => p.id === selected) : null;
 
-  const handleApprove = () => {
+  const handleApprove = async () => {
     if (!selectedPayment) return;
-    updatePaymentStatus(selectedPayment.id, "verified", adminNotes);
+    await updatePaymentStatus(selectedPayment.id, "verified", adminNotes);
     toast({ title: "Payment approved", description: "Payment has been verified." });
     setSelected(null);
     setAdminNotes("");
     onOpenChange(false);
   };
-  const handleReject = () => {
+  const handleReject = async () => {
     if (!selectedPayment) return;
-    updatePaymentStatus(selectedPayment.id, "rejected", adminNotes);
+    await updatePaymentStatus(selectedPayment.id, "rejected", adminNotes);
     toast({ title: "Payment rejected", description: "Payment has been rejected." });
     setSelected(null);
     setAdminNotes("");

@@ -98,7 +98,7 @@ export function SubscriptionManager() {
 
     // Add payment record
     try {
-      addPayment({
+      await addPayment({
         userId: currentUser.id,
         amount: calculateAmount(months),
         method: paymentMethod,

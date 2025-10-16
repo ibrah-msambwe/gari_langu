@@ -104,10 +104,10 @@ export function AdminPanel() {
     setIsPaymentDialogOpen(true)
   }
 
-  const handleApprovePayment = () => {
+  const handleApprovePayment = async () => {
     if (selectedPayment === null) return
 
-    updatePaymentStatus(selectedPayment, "verified", adminNotes)
+    await updatePaymentStatus(selectedPayment, "verified", adminNotes)
 
     toast({
       title: "Payment approved",
@@ -117,10 +117,10 @@ export function AdminPanel() {
     setIsPaymentDialogOpen(false)
   }
 
-  const handleRejectPayment = () => {
+  const handleRejectPayment = async () => {
     if (selectedPayment === null) return
 
-    updatePaymentStatus(selectedPayment, "rejected", adminNotes)
+    await updatePaymentStatus(selectedPayment, "rejected", adminNotes)
 
     toast({
       title: "Payment rejected",
