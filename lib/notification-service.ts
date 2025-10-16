@@ -1,8 +1,8 @@
 import { supabase } from "./supabaseClient"
 import { Resend } from 'resend'
 
-// Initialize Resend
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Initialize Resend only if API key is available
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
 /**
  * Service Reminder Notification System
@@ -175,7 +175,7 @@ async function sendEmailNotification(data: ReminderNotification): Promise<boolea
   
   try {
     // Check if Resend API key is configured
-    if (!process.env.RESEND_API_KEY) {
+    if (!process.env.RESEND_API_KEY || !resend) {
       console.log("[Email] RESEND_API_KEY not configured, skipping email send")
       console.log("[Email] Email content prepared:")
       console.log("To:", data.user_email)
