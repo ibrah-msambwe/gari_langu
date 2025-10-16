@@ -61,7 +61,18 @@ export default function Register() {
 
     try {
       // Register the user with Supabase Auth
-      const { data, error } = await supabase.auth.signUp({ email, password })
+      const { data, error } = await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/login`,
+          data: {
+            name: name,
+            phone: phone,
+          }
+        }
+      })
+      
       if (error) {
         setIsLoading(false)
         setFormError(error.message)
@@ -72,6 +83,7 @@ export default function Register() {
         })
         return
       }
+      
       // Insert user profile into custom users table
       if (data.user) {
         const trialEnd = new Date();
@@ -89,25 +101,28 @@ export default function Register() {
             is_admin: false
           }
         ])
+        
         if (profileError) {
           console.error("Profile insert error:", profileError);
-          setIsLoading(false)
-          setFormError("Account created, but failed to save profile: " + profileError.message)
-          toast({
-            title: "Profile save failed",
-            description: profileError.message,
-            variant: "destructive",
-          })
-          return
+          // Don't fail the registration if profile creation fails
+          // The user can still login and we can create the profile later
+          console.warn("Profile will be created on first login");
         }
       }
-      toast({
-        title: "Registration successful",
-        description: "Check your email to confirm your account.",
-      })
+      
       setIsLoading(false)
-      router.push("/login")
+      
+      // Show success message with email confirmation instructions
+      toast({
+        title: "Registration successful! 🎉",
+        description: "Please check your email to confirm your account, then you can login.",
+        duration: 7000,
+      })
+      
+      // Redirect to login page with success state
+      router.push("/login?registered=true")
     } catch (error) {
+      console.error("Registration error:", error);
       setIsLoading(false)
       setFormError("An error occurred during registration. Please try again.")
       toast({

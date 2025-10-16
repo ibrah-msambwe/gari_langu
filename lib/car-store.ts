@@ -28,8 +28,26 @@ type CarStore = {
 export const useCarStore = create<CarStore>()((set, get) => ({
   cars: [],
   fetchCars: async () => {
-    const { data, error } = await supabase.from("cars").select("*")
-    if (!error && data) {
+    // Get current user ID from auth
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      console.error("No authenticated user found")
+      set({ cars: [] })
+      return
+    }
+    
+    // Fetch only cars belonging to the current user
+    const { data, error } = await supabase
+      .from("cars")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+    
+    if (error) {
+      console.error("Error fetching cars:", error)
+      set({ cars: [] })
+    } else if (data) {
+      console.log(`Fetched ${data.length} cars for user ${user.id}`)
       set({ cars: data })
     }
   },

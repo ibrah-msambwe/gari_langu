@@ -28,7 +28,7 @@ export function AddServiceForm({ carId, onSuccess, onCancel }: AddServiceFormPro
   const [isLoading, setIsLoading] = useState(false)
   const [formError, setFormError] = useState("")
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setIsLoading(true)
     setFormError("")
@@ -58,20 +58,25 @@ export function AddServiceForm({ carId, onSuccess, onCancel }: AddServiceFormPro
         return
       }
 
-      // Create service record
+      // Create service record with correct database field names (snake_case)
       const service = {
-        carId,
+        car_id: carId,
         date,
         type: formData.get("type") as string,
         description: formData.get("description") as string,
-        mileage: Number(mileageValue),
-        cost: Number(costValue),
-        provider: formData.get("provider") as string,
-        notes: formData.get("notes") as string,
+        mileage: mileageValue.toString(),
+        cost: costValue.toString(),
+        notes: formData.get("notes") as string || "",
       }
 
-      // Add service to store
-      const newServiceId = addService(service)
+      // Add service to store (await the async function)
+      const newServiceId = await addService(service)
+      
+      if (!newServiceId) {
+        setFormError("Failed to save service record. Please try again.")
+        setIsLoading(false)
+        return
+      }
 
       // Update car's last service date
       const car = getCar(carId)

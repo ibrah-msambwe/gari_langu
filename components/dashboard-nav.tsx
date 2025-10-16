@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { BarChart3, Bell, Car, CreditCard, History, Settings, Plus, Calendar, LogOut } from "lucide-react"
 import { useLanguage } from "@/components/language-provider"
@@ -10,6 +10,7 @@ import { useAuthStore } from "@/lib/auth-store"
 
 export function DashboardNav() {
   const pathname = usePathname()
+  const router = useRouter()
   const { t } = useLanguage()
   const setLoading = useGlobalLoading((s) => s.setLoading)
   const { logout } = useAuthStore()
@@ -83,15 +84,15 @@ export function DashboardNav() {
           key={index}
           href={item.href}
           className={cn(
-            "group flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 hover:shadow-md",
+            "group flex items-center gap-3 rounded-xl px-4 py-3.5 transition-all duration-200 hover:shadow-md touch-feedback min-h-[56px]",
             isActive(item) 
-              ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg" 
+              ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg elevation-2" 
               : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
           )}
           onClick={() => setLoading(true)}
         >
           <div className={cn(
-            "flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200",
+            "flex h-9 w-9 items-center justify-center rounded-lg transition-all duration-200",
             isActive(item)
               ? "bg-white/20 text-white"
               : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/20 group-hover:text-blue-600 dark:group-hover:text-blue-400"
@@ -115,9 +116,9 @@ export function DashboardNav() {
       {/* Logout Button */}
       <button
         onClick={handleLogout}
-        className="group flex items-center gap-3 rounded-xl px-4 py-3 mt-2 text-slate-700 dark:text-slate-300 hover:bg-red-100 dark:hover:bg-red-900 hover:text-red-700 dark:hover:text-red-400 transition-all duration-200 w-full"
+        className="group flex items-center gap-3 rounded-xl px-4 py-3.5 mt-2 text-slate-700 dark:text-slate-300 hover:bg-red-100 dark:hover:bg-red-900 hover:text-red-700 dark:hover:text-red-400 transition-all duration-200 w-full touch-feedback min-h-[56px]"
       >
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400">
           <LogOut className="h-5 w-5" />
         </div>
         <span className="font-medium">Logout</span>
@@ -131,18 +132,18 @@ export function DashboardNav() {
         <div className="space-y-2">
           <Link
             href="/dashboard/cars/add"
-            className="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 transition-all duration-200"
+            className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 transition-all duration-200 touch-feedback min-h-[56px]"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400">
               <Plus className="h-4 w-4" />
             </div>
             <span className="font-medium">Add New Car</span>
           </Link>
           <Link
             href="/dashboard/reminders/add"
-            className="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 transition-all duration-200"
+            className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 transition-all duration-200 touch-feedback min-h-[56px]"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400">
               <Calendar className="h-4 w-4" />
             </div>
             <span className="font-medium">Schedule Reminder</span>

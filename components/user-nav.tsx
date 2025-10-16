@@ -71,7 +71,7 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          {!isAdmin() && (
+          {!isAdmin && (
             <>
               <DropdownMenuItem onClick={() => router.push("/dashboard/settings")}>
                 <User className="mr-2 h-4 w-4" />
@@ -91,7 +91,7 @@ export function UserNav() {
             </>
           )}
 
-          {isAdmin() && (
+          {isAdmin && (
             <>
               <DropdownMenuItem onClick={() => router.push("/admin")}>
                 <ShieldCheck className="mr-2 h-4 w-4" />

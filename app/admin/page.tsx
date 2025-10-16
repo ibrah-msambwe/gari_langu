@@ -102,16 +102,16 @@ export default function AdminDashboard() {
     .reduce((sum: number, payment: Payment) => sum + (typeof payment.amount === 'number' ? payment.amount : parseFloat(payment.amount || '0')), 0);
 
   return (
-    <div className="space-y-8">
-      <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+    <div className="space-y-6 md:space-y-8">
+      <div className="mb-4 md:mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-1">Admin Dashboard</h1>
-          <p className="text-lg text-slate-600 dark:text-slate-300">Overview of your system</p>
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-1">Admin Dashboard</h1>
+          <p className="text-sm md:text-base lg:text-lg text-slate-600 dark:text-slate-300">Overview of your system</p>
         </div>
-        <div className="flex gap-2 mt-4 md:mt-0">
+        <div className="flex gap-2">
           <Button
             size="sm"
-            className="bg-gradient-to-r from-orange-400 to-pink-500 text-white shadow-md"
+            className="w-full sm:w-auto min-h-[44px] bg-gradient-to-r from-orange-400 to-pink-500 text-white shadow-md elevation-2 hover:elevation-3 touch-feedback ripple"
             onClick={() => {
               setVerifyPaymentLoading(true)
               setVerifyPaymentOpen(true)
@@ -125,8 +125,8 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="shadow-lg border-0 bg-gradient-to-br from-green-50 to-teal-100 dark:from-slate-800 dark:to-slate-900">
+      <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className="shadow-lg border-0 bg-gradient-to-br from-green-50 to-teal-100 dark:from-slate-800 dark:to-slate-900 card-appear elevation-2 hover:elevation-3 transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-semibold text-green-900 dark:text-green-200">Total Revenue</CardTitle>
             <BarChart className="h-5 w-5 text-green-500" />
@@ -138,7 +138,7 @@ export default function AdminDashboard() {
             </p>
           </CardContent>
         </Card>
-        <Card className="shadow-lg border-0 bg-gradient-to-br from-orange-50 to-pink-100 dark:from-slate-800 dark:to-slate-900">
+        <Card className="shadow-lg border-0 bg-gradient-to-br from-orange-50 to-pink-100 dark:from-slate-800 dark:to-slate-900 card-appear elevation-2 hover:elevation-3 transition-all duration-300" style={{ animationDelay: "0.1s" }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-semibold text-orange-900 dark:text-orange-200">Pending Payments</CardTitle>
             <CreditCard className="h-5 w-5 text-orange-500" />

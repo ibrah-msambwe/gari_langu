@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabaseClient"
 export type ServiceRecord = {
   id: number // bigint in Supabase, number in JS
   created_at: string // timestamp with time zone as ISO string
+  user_id: string // uuid
   date: string // date
   from_reminder: boolean
   reminder_id: string // uuid
@@ -28,9 +29,38 @@ type ServiceStore = {
 export const useServiceStore = create<ServiceStore>()((set, get) => ({
   services: [],
   fetchServices: async () => {
-    const { data, error } = await supabase.from("services").select("*")
-    if (!error && data) {
+    // Get current user ID from auth
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      console.error("No authenticated user found")
+      set({ services: [] })
+      return
+    }
+    
+    // Fetch only services belonging to the current user
+    const { data, error } = await supabase
+      .from("services")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("date", { ascending: false })
+    
+    if (error) {
+      console.error("Error fetching services:", error)
+      console.error("Error details:", JSON.stringify(error, null, 2))
+      
+      // Check if table exists
+      if (error.message?.includes("relation") || error.message?.includes("does not exist")) {
+        console.error("Services table may not exist. Please run database migrations from DATABASE_SCHEMA.md")
+      }
+      
+      set({ services: [] })
+    } else if (data) {
+      console.log(`Fetched ${data.length} services for user ${user.id}`)
       set({ services: data })
+    } else {
+      // No error but no data - table is empty
+      console.log("No services found for user")
+      set({ services: [] })
     }
   },
   addService: async (service) => {

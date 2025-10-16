@@ -51,8 +51,29 @@ export default function RemindersPage() {
   const [reminderToDelete, setReminderToDelete] = useState<number | null>(null)
   const [activeTab, setActiveTab] = useState("upcoming")
 
-  const upcomingReminders = reminders.filter((r) => r.status === "upcoming")
-  const futureReminders = reminders.filter((r) => r.status === "future")
+  // Calculate reminder status based on due date
+  const getTimeBasedStatus = (dueDate: string) => {
+    const today = new Date();
+    const due = new Date(dueDate);
+    const daysUntil = Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (daysUntil <= 30) return "upcoming"; // Due within 30 days
+    return "future"; // More than 30 days away
+  };
+  
+  // Filter reminders by status (pending and upcoming both show as "upcoming")
+  const upcomingReminders = reminders.filter((r) => {
+    if (r.status === "completed") return false;
+    const timeStatus = getTimeBasedStatus(r.dueDate);
+    return timeStatus === "upcoming" || r.status === "pending" || r.status === "upcoming";
+  });
+  
+  const futureReminders = reminders.filter((r) => {
+    if (r.status === "completed") return false;
+    const timeStatus = getTimeBasedStatus(r.dueDate);
+    return timeStatus === "future" && r.status !== "pending";
+  });
+  
   const completedReminders = reminders.filter((r) => r.status === "completed")
 
   const handleDeleteReminder = (id: number) => {
@@ -107,7 +128,7 @@ export default function RemindersPage() {
     return {
       make: car.make,
       model: car.model,
-      licensePlate: car.licensePlate,
+      licensePlate: car.license_plate,
     }
   }
 

@@ -112,25 +112,25 @@ export default function AdminPaymentsPage() {
   const selectedPaymentUser = selectedPaymentDetails ? users.find((u) => u.id === selectedPaymentDetails.userId) : null
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Payment Management</h1>
-        <p className="text-muted-foreground">Verify and manage user payments</p>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Payment Management</h1>
+        <p className="text-sm md:text-base text-muted-foreground">Verify and manage user payments</p>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+      <div className="flex flex-col sm:flex-row gap-3 md:gap-4 items-center justify-between">
         <div className="relative w-full sm:w-auto">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-2.5 top-3 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search payments..."
-            className="pl-8 w-full sm:w-[300px]"
+            className="pl-8 w-full sm:w-[300px] min-h-[44px]"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
           <Select value={filterMethod} onValueChange={setFilterMethod}>
-            <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px] min-h-[44px]">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Payment method" />
             </SelectTrigger>
@@ -146,22 +146,71 @@ export default function AdminPaymentsPage() {
         </div>
       </div>
 
-      <Card>
-        <CardHeader className="pb-3">
+      <Card className="elevation-2">
+        <CardHeader className="pb-3 p-4 md:p-6">
           <Tabs
             defaultValue="all"
             value={activeTab}
             onValueChange={(value) => setActiveTab(value as PaymentStatus | "all")}
           >
-            <TabsList className="grid grid-cols-4 w-full sm:w-[400px]">
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="pending">Pending</TabsTrigger>
-              <TabsTrigger value="verified">Verified</TabsTrigger>
-              <TabsTrigger value="rejected">Rejected</TabsTrigger>
+            <TabsList className="grid grid-cols-4 w-full">
+              <TabsTrigger value="all" className="min-h-[40px]">All</TabsTrigger>
+              <TabsTrigger value="pending" className="min-h-[40px]">Pending</TabsTrigger>
+              <TabsTrigger value="verified" className="min-h-[40px]">Verified</TabsTrigger>
+              <TabsTrigger value="rejected" className="min-h-[40px]">Rejected</TabsTrigger>
             </TabsList>
           </Tabs>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0 md:p-6 md:pt-0">
+          {/* Mobile Card View */}
+          <div className="block md:hidden space-y-3 p-4">
+            {filteredPayments.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No payments found matching your filters
+              </div>
+            ) : (
+              filteredPayments.map((payment) => {
+                const user = users.find((u) => u.id === payment.userId)
+                return (
+                  <Card key={payment.id} className="elevation-1">
+                    <CardContent className="p-4 space-y-3">
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1 flex-1">
+                          <p className="font-semibold text-base">{user?.name || "Unknown User"}</p>
+                          <p className="text-sm text-muted-foreground">{user?.email}</p>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            <span className="text-sm font-medium">{payment.amount.toLocaleString()} TZS</span>
+                            <span className="text-sm text-muted-foreground">•</span>
+                            <span className="text-sm text-muted-foreground">{payment.method}</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">{new Date(payment.date).toLocaleDateString()}</p>
+                        </div>
+                        {payment.status === "pending" && <Badge className="bg-yellow-500">Pending</Badge>}
+                        {payment.status === "verified" && <Badge className="bg-green-500">Verified</Badge>}
+                        {payment.status === "rejected" && (
+                          <Badge variant="outline" className="border-red-200 text-red-700">
+                            Rejected
+                          </Badge>
+                        )}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full min-h-[44px] touch-feedback"
+                        onClick={() => handleViewPayment(payment.id)}
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Details
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )
+              })
+            )}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden md:block">
           <Table>
             <TableHeader>
               <TableRow>
@@ -222,14 +271,15 @@ export default function AdminPaymentsPage() {
                   )
                 })
               )}
-            </TableBody>
-          </Table>
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
       {/* Payment Details Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Payment Details</DialogTitle>
             <DialogDescription>Review payment information and verification details.</DialogDescription>
@@ -317,20 +367,32 @@ export default function AdminPaymentsPage() {
             </div>
           )}
 
-          <DialogFooter className="flex justify-between">
+          <DialogFooter className="flex flex-col sm:flex-row justify-between gap-2">
             {selectedPaymentDetails?.status === "pending" ? (
               <>
-                <Button variant="outline" onClick={() => handleRejectPayment()}>
+                <Button 
+                  variant="outline" 
+                  className="w-full sm:w-auto min-h-[44px] touch-feedback" 
+                  onClick={() => handleRejectPayment()}
+                >
                   <XCircle className="h-4 w-4 mr-2" />
                   Reject
                 </Button>
-                <Button onClick={() => handleApprovePayment()}>
+                <Button 
+                  className="w-full sm:w-auto min-h-[44px] touch-feedback" 
+                  onClick={() => handleApprovePayment()}
+                >
                   <CheckCircle className="h-4 w-4 mr-2" />
                   Approve
                 </Button>
               </>
             ) : (
-              <Button onClick={() => setIsDialogOpen(false)}>Close</Button>
+              <Button 
+                className="w-full min-h-[44px] touch-feedback" 
+                onClick={() => setIsDialogOpen(false)}
+              >
+                Close
+              </Button>
             )}
           </DialogFooter>
         </DialogContent>

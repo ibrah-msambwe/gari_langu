@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Edit, Trash2, Search, Filter, RefreshCw, Power, PowerOff } from "lucide-react"
+import { cn } from "@/lib/utils"
 import {
   Dialog,
   DialogContent,
@@ -160,18 +161,18 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
-        <p className="text-muted-foreground">Manage user accounts and subscriptions</p>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">User Management</h1>
+        <p className="text-sm md:text-base text-muted-foreground">Manage user accounts and subscriptions</p>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+      <div className="flex flex-col sm:flex-row gap-3 md:gap-4 items-center justify-between">
         <div className="relative w-full sm:w-auto">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-2.5 top-3 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search users..."
-            className="pl-8 w-full sm:w-[300px]"
+            className="pl-8 w-full sm:w-[300px] min-h-[44px]"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -183,7 +184,7 @@ export default function AdminUsersPage() {
               setFilterStatus(value)
             }
           >
-            <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px] min-h-[44px]">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Filter status" />
             </SelectTrigger>
@@ -198,6 +199,7 @@ export default function AdminUsersPage() {
           </Select>
           <Button
             variant="outline"
+            className="min-h-[44px] min-w-[44px] touch-feedback"
             onClick={() => {
               setSearchQuery("")
               setFilterStatus("all")
@@ -209,22 +211,104 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
+      <Card className="elevation-2">
+        <CardHeader className="p-4 md:p-6">
           <CardTitle>All Users ({filteredUsers.length})</CardTitle>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Registration Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
+        <CardContent className="p-0 md:p-6 md:pt-0">
+          {/* Mobile Card View */}
+          <div className="block md:hidden space-y-3 p-4">
+            {filteredUsers.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No users found matching your filters
+              </div>
+            ) : (
+              filteredUsers.map((user) => (
+                <Card key={user.id} className={cn("elevation-1", !user.isActive && "bg-muted/30")}>
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1 flex-1">
+                        <p className="font-semibold text-base">{user.name}</p>
+                        <p className="text-sm text-muted-foreground">{user.email}</p>
+                        {user.phone && <p className="text-xs text-muted-foreground">{user.phone}</p>}
+                      </div>
+                      {!user.isActive ? (
+                        <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200">
+                          Disabled
+                        </Badge>
+                      ) : user.isAdmin ? (
+                        <Badge className="bg-purple-500">Admin</Badge>
+                      ) : user.isSubscribed &&
+                        user.subscriptionEndDate &&
+                        new Date(user.subscriptionEndDate as string) > new Date() ? (
+                        <Badge className="bg-green-500">Active</Badge>
+                      ) : user.trialEnd && new Date(user.trialEnd as string) > new Date() ? (
+                        <Badge className="bg-blue-500">Trial</Badge>
+                      ) : user.pendingPayment ? (
+                        <Badge className="bg-yellow-500">Pending</Badge>
+                      ) : (
+                        <Badge variant="outline">Inactive</Badge>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 min-h-[44px] touch-feedback"
+                        onClick={() => handleToggleUserActive(user.id, user.isActive !== false)}
+                        disabled={user.isAdmin}
+                      >
+                        {user.isActive === false ? (
+                          <>
+                            <Power className="h-4 w-4 mr-2" />
+                            Enable
+                          </>
+                        ) : (
+                          <>
+                            <PowerOff className="h-4 w-4 mr-2" />
+                            Disable
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 min-h-[44px] touch-feedback"
+                        onClick={() => handleEditUser(user.id)}
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </Button>
+                      {!user.isAdmin && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="min-h-[44px] min-w-[44px] text-red-500 touch-feedback"
+                          onClick={() => handleDeleteUser(user.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Registration Date</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
             <TableBody>
               {filteredUsers.length === 0 ? (
                 <TableRow>
@@ -290,14 +374,15 @@ export default function AdminUsersPage() {
                   </TableRow>
                 ))
               )}
-            </TableBody>
-          </Table>
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
       {/* User Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Edit User</DialogTitle>
             <DialogDescription>Update user information.</DialogDescription>
@@ -345,10 +430,10 @@ export default function AdminUsersPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+            <Button variant="outline" className="min-h-[44px]" onClick={() => setIsEditDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleUpdateUser}>Save Changes</Button>
+            <Button className="min-h-[44px]" onClick={handleUpdateUser}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -363,8 +448,8 @@ export default function AdminUsersPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={confirmDeleteUser}>
+            <AlertDialogCancel className="min-h-[44px]">Cancel</AlertDialogCancel>
+            <AlertDialogAction className="bg-red-600 hover:bg-red-700 min-h-[44px]" onClick={confirmDeleteUser}>
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -7,21 +7,21 @@ export default function Home() {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
-        <div className="container flex h-16 items-center justify-between">
+        <div className="container flex h-14 md:h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold">Gari Langu</h1>
+            <h1 className="text-lg md:text-xl font-bold">Gari Langu</h1>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
             <ThemeToggle />
             <div className="flex items-center gap-2">
               <Link href="/login">
-                <Button variant="outline">Login</Button>
+                <Button variant="outline" size="sm" className="h-9">Login</Button>
               </Link>
-              <Link href="/register">
-                <Button>Register</Button>
+              <Link href="/register" className="hidden sm:block">
+                <Button size="sm" className="h-9">Register</Button>
               </Link>
-              <Link href="/login-admin">
-                <Button variant="ghost" size="icon">
+              <Link href="/login-admin" className="hidden md:block">
+                <Button variant="ghost" size="icon" className="h-9 w-9">
                   <ShieldCheck className="h-5 w-5" />
                   <span className="sr-only">Admin Login</span>
                 </Button>
@@ -31,28 +31,28 @@ export default function Home() {
         </div>
       </header>
       <main className="flex-1">
-        <section className="container py-12 md:py-24 lg:py-32">
+        <section className="container py-8 md:py-16 lg:py-24 px-4">
           <div className="mx-auto flex max-w-[980px] flex-col items-center gap-4 text-center">
-            <h1 className="text-3xl font-bold leading-tight tracking-tighter md:text-5xl lg:text-6xl lg:leading-[1.1]">
+            <h1 className="text-2xl font-bold leading-tight tracking-tighter sm:text-3xl md:text-5xl lg:text-6xl lg:leading-[1.1]">
               Manage Your Cars With Ease
             </h1>
-            <p className="max-w-[750px] text-lg text-muted-foreground sm:text-xl">
+            <p className="max-w-[750px] text-base sm:text-lg text-muted-foreground">
               Register your vehicles, track service history, and receive timely maintenance reminders.
             </p>
-            <div className="flex flex-col gap-2 min-[400px]:flex-row">
-              <Link href="/register">
-                <Button size="lg">Get Started</Button>
+            <div className="flex flex-col gap-3 min-[400px]:flex-row w-full max-w-xs min-[400px]:max-w-none">
+              <Link href="/register" className="w-full min-[400px]:w-auto">
+                <Button size="lg" className="w-full min-[400px]:w-auto h-12 text-base">Get Started</Button>
               </Link>
-              <Link href="#pricing">
-                <Button size="lg" variant="outline">
+              <Link href="#pricing" className="w-full min-[400px]:w-auto">
+                <Button size="lg" variant="outline" className="w-full min-[400px]:w-auto h-12 text-base">
                   View Pricing
                 </Button>
               </Link>
             </div>
           </div>
         </section>
-        <section className="container py-12 md:py-24 lg:py-32 bg-muted/50">
-          <div className="mx-auto grid max-w-5xl gap-6 px-6 lg:grid-cols-3 lg:gap-12">
+        <section className="container py-8 md:py-16 lg:py-24 bg-muted/50 px-4">
+          <div className="mx-auto grid max-w-5xl gap-6 md:gap-8 lg:grid-cols-3 lg:gap-12">
             <div className="flex flex-col items-center gap-2 text-center">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
                 <Car className="h-6 w-6" />
@@ -81,15 +81,15 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="pricing" className="container py-12 md:py-24 lg:py-32">
+        <section id="pricing" className="container py-8 md:py-16 lg:py-24 px-4">
           <div className="mx-auto max-w-5xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Simple, Transparent Pricing</h2>
-            <p className="mt-4 text-lg text-muted-foreground">
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Simple, Transparent Pricing</h2>
+            <p className="mt-4 text-base md:text-lg text-muted-foreground">
               Start with a 7-day free trial. No credit card required.
             </p>
           </div>
 
-          <div className="mx-auto mt-16 max-w-5xl grid gap-8 lg:grid-cols-2">
+          <div className="mx-auto mt-8 md:mt-16 max-w-5xl grid gap-6 md:gap-8 lg:grid-cols-2">
             <div className="flex flex-col rounded-3xl border bg-background p-8">
               <h3 className="text-lg font-semibold leading-8">Free Trial</h3>
               <p className="mt-4 text-sm text-muted-foreground">Try all features for 7 days with no commitment.</p>
@@ -116,7 +116,7 @@ export default function Home() {
                 </li>
               </ul>
               <Link href="/register" className="mt-8">
-                <Button className="w-full">Start Free Trial</Button>
+                <Button className="w-full h-12 text-base">Start Free Trial</Button>
               </Link>
             </div>
 
@@ -154,7 +154,7 @@ export default function Home() {
                 </li>
               </ul>
               <Link href="/register" className="mt-8">
-                <Button className="w-full" variant="default">
+                <Button className="w-full h-12 text-base" variant="default">
                   <CreditCard className="mr-2 h-4 w-4" />
                   Subscribe Now
                 </Button>
@@ -168,8 +168,8 @@ export default function Home() {
         </section>
       </main>
       <footer className="border-t py-6 md:py-0">
-        <div className="container flex flex-col items-center justify-between gap-4 md:h-16 md:flex-row">
-          <p className="text-sm text-muted-foreground">
+        <div className="container flex flex-col items-center justify-between gap-4 md:h-16 md:flex-row px-4">
+          <p className="text-xs md:text-sm text-muted-foreground text-center">
             &copy; {new Date().getFullYear()} Gari Langu. All rights reserved.
           </p>
         </div>

@@ -93,24 +93,24 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+    <div className="space-y-6 md:space-y-8 page-transition">
+      <div className="mb-4 md:mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-1">Dashboard</h1>
-          <p className="text-lg text-slate-600 dark:text-slate-300">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-1 card-appear">Dashboard</h1>
+          <p className="text-sm md:text-base lg:text-lg text-slate-600 dark:text-slate-300">
             {user
               ? `Welcome to your Gari Langu dashboard, ${user.email}.`
               : "Welcome to your Gari Langu dashboard."}
           </p>
         </div>
-        <div className="flex gap-2 mt-4 md:mt-0">
-          <Link href="/dashboard/cars/add">
-            <Button size="sm" className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md">
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Link href="/dashboard/cars/add" className="w-full sm:w-auto">
+            <Button size="sm" className="w-full sm:w-auto min-h-[44px] bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md elevation-2 hover:elevation-3 touch-feedback ripple">
               <Plus className="mr-2 h-4 w-4" /> Add Car
             </Button>
           </Link>
-          <Link href="/dashboard/reminders/add">
-            <Button size="sm" className="bg-gradient-to-r from-orange-400 to-pink-500 text-white shadow-md">
+          <Link href="/dashboard/reminders/add" className="w-full sm:w-auto">
+            <Button size="sm" className="w-full sm:w-auto min-h-[44px] bg-gradient-to-r from-orange-400 to-pink-500 text-white shadow-md elevation-2 hover:elevation-3 touch-feedback ripple">
               <Bell className="mr-2 h-4 w-4" /> Schedule Reminder
             </Button>
           </Link>
@@ -118,27 +118,27 @@ export default function Dashboard() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="shadow-lg border-0 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-800 dark:to-slate-900">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-semibold text-blue-900 dark:text-blue-200">Total Cars</CardTitle>
-            <Car className="h-5 w-5 text-blue-500" />
+      <div className="grid gap-4 md:gap-6 grid-cols-2 lg:grid-cols-4">
+        <Card className="shadow-lg border-0 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-800 dark:to-slate-900 card-appear elevation-2 hover:elevation-3 transition-all duration-300">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6">
+            <CardTitle className="text-xs md:text-sm font-semibold text-blue-900 dark:text-blue-200">Total Cars</CardTitle>
+            <Car className="h-4 w-4 md:h-5 md:w-5 text-blue-500" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 md:p-6 pt-0 md:pt-0">
             <div className="flex items-center gap-2">
-              <div className="text-2xl font-bold">{cars.length}</div>
+              <div className="text-xl md:text-2xl font-bold">{cars.length}</div>
             </div>
             {cars.length === 0 ? (
-              <div className="mt-2">
+              <div className="mt-2 hidden sm:block">
                 <Link href="/dashboard/cars/add">
                   <Button variant="link" className="h-auto p-0 text-xs text-primary">
-                    Add your first car <ArrowRight className="ml-1 h-3 w-3" />
+                    Add car <ArrowRight className="ml-1 h-3 w-3" />
                   </Button>
                 </Link>
               </div>
             ) : (
-              <p className="text-xs text-muted-foreground">
-                {cars.length > 1 ? `${cars.length} vehicles registered` : "1 vehicle registered"}
+              <p className="text-[10px] md:text-xs text-muted-foreground">
+                {cars.length > 1 ? `${cars.length} vehicles` : "1 vehicle"}
               </p>
             )}
           </CardContent>
@@ -146,17 +146,17 @@ export default function Dashboard() {
 
         <Card className={
           isSubscribed && subscriptionEndDate && differenceInDays(new Date(subscriptionEndDate), new Date()) >= 0
-            ? "shadow-lg border-0 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800"
+            ? "shadow-lg border-0 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 card-appear elevation-2 hover:elevation-3 transition-all duration-300"
             : !isSubscribed && trialEnd && differenceInDays(new Date(trialEnd), new Date()) >= 0
-            ? "shadow-lg border-0 bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900 dark:to-yellow-800"
-            : "shadow-lg border-0 bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900 dark:to-red-800"
-        }>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{isSubscribed ? "Subscription Status" : "Trial Status"}</CardTitle>
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
+            ? "shadow-lg border-0 bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900 dark:to-yellow-800 card-appear elevation-2 hover:elevation-3 transition-all duration-300"
+            : "shadow-lg border-0 bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900 dark:to-red-800 card-appear elevation-2 hover:elevation-3 transition-all duration-300"
+        } style={{ animationDelay: "0.1s" }}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6">
+            <CardTitle className="text-xs md:text-sm font-medium">{isSubscribed ? "Subscription" : "Trial"}</CardTitle>
+            <CreditCard className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-extrabold ">
+          <CardContent className="p-4 md:p-6 pt-0 md:pt-0">
+            <div className="text-xl md:text-2xl lg:text-3xl font-extrabold ">
               {(() => {
                 if (isSubscribed && subscriptionEndDate) {
                   const days = differenceInDays(new Date(subscriptionEndDate), new Date())
@@ -171,54 +171,54 @@ export default function Dashboard() {
                 }
               })()}
             </div>
-            <p className="text-xs mt-2">
+            <p className="text-[10px] md:text-xs mt-2 hidden sm:block">
               {(() => {
                 if (isSubscribed && subscriptionEndDate) {
                   const days = differenceInDays(new Date(subscriptionEndDate), new Date())
-                  if (days < 0) return "Your subscription has expired."
+                  if (days < 0) return "Expired"
                   return "Paid subscription"
                 } else if (trialEnd) {
                   const days = differenceInDays(new Date(trialEnd), new Date())
-                  if (days < 0) return "Your trial has expired."
+                  if (days < 0) return "Expired"
                   return "Trial period"
                 } else {
-                  return "No status available."
+                  return "Unknown"
                 }
               })()}
             </p>
           </CardContent>
         </Card>
 
-        <Card className="shadow-lg border-0 bg-gradient-to-br from-orange-50 to-pink-100 dark:from-slate-800 dark:to-slate-900">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-semibold text-orange-900 dark:text-orange-200">Upcoming Services</CardTitle>
-            <Wrench className="h-5 w-5 text-orange-500" />
+        <Card className="shadow-lg border-0 bg-gradient-to-br from-orange-50 to-pink-100 dark:from-slate-800 dark:to-slate-900 card-appear elevation-2 hover:elevation-3 transition-all duration-300" style={{ animationDelay: "0.2s" }}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6">
+            <CardTitle className="text-xs md:text-sm font-semibold text-orange-900 dark:text-orange-200">Services</CardTitle>
+            <Wrench className="h-4 w-4 md:h-5 md:w-5 text-orange-500" />
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-extrabold text-orange-900 dark:text-orange-200">{upcomingReminders.length}</div>
+          <CardContent className="p-4 md:p-6 pt-0 md:pt-0">
+            <div className="text-xl md:text-2xl lg:text-3xl font-extrabold text-orange-900 dark:text-orange-200">{upcomingReminders.length}</div>
             {upcomingReminders.length === 0 ? (
-              <div className="mt-2">
+              <div className="mt-2 hidden sm:block">
                 <Link href="/dashboard/reminders/add">
                   <Button variant="link" className="h-auto p-0 text-xs text-orange-600">
-                    Schedule a service <ArrowRight className="ml-1 h-3 w-3" />
+                    Schedule <ArrowRight className="ml-1 h-3 w-3" />
                   </Button>
                 </Link>
               </div>
             ) : (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[10px] md:text-xs text-muted-foreground">
                 {(() => {
                   const days = getDaysUntil(upcomingReminders[0].due_date)
-                  if (days < 0) return `Overdue by ${Math.abs(days)} days`
-                  return `Next service in ${days} days`
+                  if (days < 0) return `Overdue`
+                  return `In ${days} days`
                 })()}
               </p>
             )}
           </CardContent>
         </Card>
 
-        <Card className="shadow-lg border-0 bg-gradient-to-br from-green-50 to-teal-100 dark:from-slate-800 dark:to-slate-900">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-semibold text-green-900 dark:text-green-200">Recent Services</CardTitle>
+        <Card className="shadow-lg border-0 bg-gradient-to-br from-green-50 to-teal-100 dark:from-slate-800 dark:to-slate-900 card-appear elevation-2 hover:elevation-3 transition-all duration-300" style={{ animationDelay: "0.3s" }}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6">
+            <CardTitle className="text-xs md:text-sm font-semibold text-green-900 dark:text-green-200">Services</CardTitle>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"
@@ -229,25 +229,25 @@ export default function Dashboard() {
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="lucide lucide-check-circle h-5 w-5 text-green-500"
+              className="lucide lucide-check-circle h-4 w-4 md:h-5 md:w-5 text-green-500"
             >
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
               <path d="m9 11 3 3L22 4" />
             </svg>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-extrabold text-green-900 dark:text-green-200">{services.length}</div>
+          <CardContent className="p-4 md:p-6 pt-0 md:pt-0">
+            <div className="text-xl md:text-2xl lg:text-3xl font-extrabold text-green-900 dark:text-green-200">{services.length}</div>
             {services.length === 0 ? (
-              <div className="mt-2">
+              <div className="mt-2 hidden sm:block">
                 <Link href="/dashboard/history">
                   <Button variant="link" className="h-auto p-0 text-xs text-green-600">
-                    Add service record <ArrowRight className="ml-1 h-3 w-3" />
+                    Add record <ArrowRight className="ml-1 h-3 w-3" />
                   </Button>
                 </Link>
               </div>
             ) : (
-              <p className="text-xs text-green-700 dark:text-green-300">
-                Last service on {new Date(services[0].date).toLocaleDateString()}
+              <p className="text-[10px] md:text-xs text-green-700 dark:text-green-300 hidden sm:block">
+                Last: {new Date(services[0].date).toLocaleDateString()}
               </p>
             )}
           </CardContent>
@@ -256,7 +256,7 @@ export default function Dashboard() {
 
       {/* Activity and Reminders */}
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="shadow-md border-0">
+        <Card className="shadow-md border-0 elevation-2 hover:elevation-3 transition-all duration-300 card-appear" style={{ animationDelay: "0.4s" }}>
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
             <CardDescription>Your recent car-related activities</CardDescription>
@@ -324,7 +324,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-md border-0">
+        <Card className="shadow-md border-0 elevation-2 hover:elevation-3 transition-all duration-300 card-appear" style={{ animationDelay: "0.5s" }}>
           <CardHeader>
             <CardTitle>Upcoming Reminders</CardTitle>
             <CardDescription>Stay on top of your car maintenance</CardDescription>

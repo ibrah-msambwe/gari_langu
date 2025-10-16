@@ -18,7 +18,7 @@ export function ReminderNotificationSystem() {
   const { cars } = useCarStore()
   const { currentUser } = useAuthStore()
   const { sendReminderNotification } = useNotificationStore()
-  const { addServiceHistory } = useServiceStore()
+  const { addService } = useServiceStore()
   const { toast } = useToast()
   const [isSending, setIsSending] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -35,7 +35,7 @@ export function ReminderNotificationSystem() {
 
   const getCarDetails = (carId: number) => {
     const car = cars.find((c) => c.id === carId)
-    return car ? `${car.make} ${car.model} (${car.licensePlate})` : "Unknown Vehicle"
+    return car ? `${car.make} ${car.model} (${car.license_plate})` : "Unknown Vehicle"
   }
 
   const getDaysUntil = (dateString: string) => {
@@ -86,15 +86,8 @@ export function ReminderNotificationSystem() {
         sendReminderNotification(currentUser.id, reminder.serviceType, reminder.dueDate)
       }
 
-      // Add to service history
-      addServiceHistory({
-        carId: reminder.carId,
-        serviceType: reminder.serviceType,
-        date: new Date().toISOString(),
-        notes: `Reminder sent for service due on ${new Date(reminder.dueDate).toLocaleDateString()}`,
-        cost: 0,
-        reminderId: reminder.id,
-      })
+      // Note: Service history is auto-created when reminder is marked as complete
+      // We don't add it here, only mark notification as sent
     }, 800)
   }
 

@@ -2,23 +2,37 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { useAuthStore } from "@/lib/auth-store"
 import { useToast } from "@/components/ui/use-toast"
-import { Loader2 } from "lucide-react"
+import { Loader2, Mail } from "lucide-react"
 
 export default function Login() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { login } = useAuthStore()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [formError, setFormError] = useState("")
+  const [showEmailConfirmation, setShowEmailConfirmation] = useState(false)
+
+  useEffect(() => {
+    // Check if user just registered
+    if (searchParams.get('registered') === 'true') {
+      setShowEmailConfirmation(true)
+      toast({
+        title: "Check your email! 📧",
+        description: "We've sent you a confirmation link. Click it to activate your account.",
+        duration: 8000,
+      })
+    }
+  }, [searchParams, toast])
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -45,7 +59,17 @@ export default function Login() {
       }, 1000)
     } else {
       setIsLoading(false)
-      const errorMsg = 'error' in result && result.error?.message || "Invalid email or password. Please try again."
+      let errorMsg = 'error' in result && result.error?.message || "Incorrect email or password. Please try again."
+      
+      // Provide more helpful error messages
+      if (errorMsg.includes("Invalid login credentials")) {
+        errorMsg = "Incorrect email or password. Please check your credentials and try again."
+      } else if (errorMsg.includes("Email not confirmed")) {
+        errorMsg = "Please check your email and confirm your account before logging in."
+      } else if (errorMsg.includes("User not found")) {
+        errorMsg = "No account found with this email. Please register first."
+      }
+      
       console.log("Login error:", errorMsg);
       setFormError(errorMsg)
       toast({
@@ -83,23 +107,60 @@ export default function Login() {
           <h1 className="text-2xl font-semibold tracking-tight">Login to your account</h1>
           <p className="text-sm text-muted-foreground">Enter your credentials below to access your account</p>
         </div>
-        <Card>
+        {showEmailConfirmation && (
+          <div className="rounded-lg bg-blue-50 dark:bg-blue-900/20 p-4 border border-blue-200 dark:border-blue-800 elevation-1">
+            <div className="flex gap-3">
+              <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="font-semibold text-sm text-blue-900 dark:text-blue-100">Email Confirmation Required</h3>
+                <p className="text-xs text-blue-800 dark:text-blue-200 mt-1">
+                  Please check your email and click the confirmation link before logging in.
+                  Check your spam folder if you don't see it.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <Card className="elevation-2">
           <form onSubmit={onSubmit}>
             <CardContent className="pt-6">
               <div className="grid gap-4">
-                {formError && <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{formError}</div>}
+                {formError && (
+                  <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800">
+                    {formError}
+                  </div>
+                )}
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" name="email" type="email" placeholder="example@example.com" required />
+                  <Input 
+                    id="email" 
+                    name="email" 
+                    type="email" 
+                    placeholder="example@example.com" 
+                    required 
+                    className="min-h-[44px]"
+                  />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input id="password" name="password" type="password" required />
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Password</Label>
+                    <Link href="/forgot-password" className="text-xs text-primary hover:underline">
+                      Forgot password?
+                    </Link>
+                  </div>
+                  <Input 
+                    id="password" 
+                    name="password" 
+                    type="password" 
+                    required 
+                    className="min-h-[44px]"
+                  />
                 </div>
               </div>
             </CardContent>
             <CardFooter>
-              <Button className="w-full" type="submit" disabled={isLoading}>
+              <Button className="w-full min-h-[44px] touch-feedback ripple" type="submit" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

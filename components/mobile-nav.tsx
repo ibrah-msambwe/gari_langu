@@ -91,16 +91,21 @@ export function MobileNav() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden">
-          <Menu className="h-5 w-5" />
+        <Button variant="ghost" size="icon" className="md:hidden touch-feedback">
+          <Menu className="h-6 w-6" />
           <span className="sr-only">Toggle menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-[280px] sm:w-[300px] p-0">
+      <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0 safe-left">
         <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between border-b p-4">
-            <h2 className="text-lg font-semibold">Gari Langu</h2>
-            <Button variant="ghost" size="icon" onClick={() => setOpen(false)}>
+          <div className="flex items-center justify-between border-b p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg">
+                <Car className="h-6 w-6 text-white" />
+              </div>
+              <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Gari Langu</h2>
+            </div>
+            <Button variant="ghost" size="icon" className="touch-feedback" onClick={() => setOpen(false)}>
               <X className="h-5 w-5" />
               <span className="sr-only">Close menu</span>
             </Button>
@@ -120,16 +125,16 @@ export function MobileNav() {
                 </div>
               </div>
               <div className="mt-4 flex gap-2">
-                <Link href="/dashboard/profile" onClick={() => { setOpen(false); setLoading(true); }} className="flex-1">
-                  <Button variant="outline" size="sm" className="w-full">
+                <Link href="/dashboard/settings" onClick={() => { setOpen(false); setLoading(true); }} className="flex-1">
+                  <Button variant="outline" size="sm" className="w-full min-h-[44px] touch-feedback">
                     <User className="mr-2 h-4 w-4" />
                     Profile
                   </Button>
                 </Link>
                 <Link href="/dashboard/subscription" onClick={() => { setOpen(false); setLoading(true); }} className="flex-1">
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Button variant="outline" size="sm" className="w-full min-h-[44px] touch-feedback">
                     <CreditCard className="mr-2 h-4 w-4" />
-                    Subscription
+                    Subscribe
                   </Button>
                 </Link>
               </div>
@@ -137,33 +142,47 @@ export function MobileNav() {
           )}
 
           <nav className="flex-1 overflow-auto py-4">
-            <div className="grid gap-1 px-2">
-              {navItems.map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.href}
-                  onClick={() => { setOpen(false); setLoading(true); }}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary",
-                    pathname === item.href || pathname.startsWith(item.href + "/")
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-muted",
-                  )}
-                >
-                  {item.icon}
-                  {item.title}
-                </Link>
-              ))}
+            <div className="grid gap-2 px-4">
+              {navItems.map((item, index) => {
+                const active = pathname === item.href || pathname.startsWith(item.href + "/")
+                return (
+                  <Link
+                    key={index}
+                    href={item.href}
+                    onClick={() => { setOpen(false); setLoading(true); }}
+                    className={cn(
+                      "flex items-center gap-3 rounded-xl px-4 py-3.5 transition-all duration-200 touch-feedback min-h-[48px]",
+                      active
+                        ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg elevation-2"
+                        : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    )}
+                  >
+                    <div className={cn(
+                      "flex h-9 w-9 items-center justify-center rounded-lg transition-all duration-200",
+                      active
+                        ? "bg-white/20 text-white"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                    )}>
+                      {item.icon}
+                    </div>
+                    <span className="font-medium">{item.title}</span>
+                  </Link>
+                )
+              })}
             </div>
           </nav>
 
           <div className="border-t p-4">
-            <Button variant="ghost" className="w-full justify-start text-red-500" onClick={handleLogout}>
-              <LogOut className="mr-2 h-4 w-4" />
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 min-h-[48px] touch-feedback" 
+              onClick={handleLogout}
+            >
+              <LogOut className="mr-2 h-5 w-5" />
               Log out
             </Button>
             <Separator className="my-4" />
-            <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} Gari Langu</p>
+            <p className="text-xs text-center text-muted-foreground">&copy; {new Date().getFullYear()} Gari Langu. All rights reserved.</p>
           </div>
         </div>
       </SheetContent>

@@ -64,33 +64,67 @@ export default function AddReminderPage() {
       return
     }
 
-    // Create reminder object
+    // Create reminder object with correct database field names (snake_case)
     const reminder = {
-      carId: Number(formData.get("carId")),
-      serviceType: formData.get("serviceType") as string,
-      dueDate: format(date, "yyyy-MM-dd"),
-      status: getDueStatus(date),
-      notificationSent: false,
-      notificationTypes: getSelectedNotificationTypes(),
-      notificationSchedule: getNotificationSchedule(formData.get("notificationSchedule") as string),
-      priority: formData.get("priority") as "high" | "medium" | "low",
-      notes: (formData.get("notes") as string) || undefined,
+      car_id: Number(formData.get("carId")),
+      service_type: formData.get("serviceType") as string,
+      due_date: format(date, "yyyy-MM-dd"),
+      status: "pending",
+      notification_sent: false,
+      notification_types: getSelectedNotificationTypes().join(','),
+      notification_schedule: getNotificationSchedule(formData.get("notificationSchedule") as string),
+      priority: formData.get("priority") as string,
+      notes: (formData.get("notes") as string) || "",
+      added_to_service_history: false
     }
 
     // Add reminder to store
-    addReminder(reminder)
+    try {
+      const reminderId = await addReminder(reminder)
+      
+      if (!reminderId) {
+        toast({
+          title: "Error",
+          description: "Failed to create reminder. Please check the console for details.",
+          variant: "destructive",
+        })
+        setIsLoading(false)
+        return
+      }
+      
+      console.log("✅ Reminder created with ID:", reminderId)
+    } catch (error) {
+      console.error("❌ Error in onSubmit:", error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to create reminder",
+        variant: "destructive",
+      })
+      setIsLoading(false)
+      return
+    }
 
-    // Show success toast
-    toast({
-      title: "Reminder added",
-      description: "Your reminder has been added successfully.",
-    })
+    // Show success toast with car details
+    const selectedCar = cars.find(c => c.id === Number(formData.get("carId")))
+    if (selectedCar) {
+      toast({
+        title: "✅ Reminder Created Successfully!",
+        description: `You'll be notified about ${reminder.service_type} for your ${selectedCar.make} ${selectedCar.model} (${selectedCar.license_plate}) on ${new Date(reminder.due_date).toLocaleDateString()}. Confirmation email sent!`,
+        duration: 7000,
+      })
+    } else {
+      toast({
+        title: "✅ Reminder Created Successfully!",
+        description: `Your service reminder has been created. Confirmation email sent!`,
+        duration: 5000,
+      })
+    }
 
     // Redirect to reminders page
     setTimeout(() => {
       setIsLoading(false)
       router.push("/dashboard/reminders")
-    }, 1000)
+    }, 2000)
   }
 
   const getDueStatus = (dueDate: Date): "upcoming" | "future" => {
@@ -150,7 +184,7 @@ export default function AddReminderPage() {
                         <div className="flex items-center">
                           <Car className="mr-2 h-4 w-4" />
                           <span>
-                            {car.make} {car.model} ({car.licensePlate})
+                            {car.make} {car.model} ({car.license_plate})
                           </span>
                         </div>
                       </SelectItem>
